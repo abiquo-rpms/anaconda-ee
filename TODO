@@ -1,0 +1,4 @@
+add a patch to remove all languages but English in the installer
+Remove default extra repo from CentOS
+Replace centos branding patches
+Replace centos images

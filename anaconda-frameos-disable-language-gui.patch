@@ -1,0 +1,24 @@
+diff -uNr -uNr anaconda-11.1.2.195/dispatch.py anaconda-11.1.2.195.frameos/dispatch.py
+--- anaconda-11.1.2.195/dispatch.py	2009-08-05 16:32:40.000000000 +0200
++++ anaconda-11.1.2.195.frameos/dispatch.py	2010-06-10 14:44:18.055826021 +0200
+@@ -62,7 +62,7 @@
+ installSteps = [
+     ("welcome", ),
+     ("betanag", betaNagScreen, ),
+-    ("language", ),
++#    ("language", ),
+     ("keyboard", ),
+     ("regkey", regKeyScreen, ),
+     ("findrootparts", findRootParts, ),
+diff -uNr -uNr anaconda-11.1.2.195/gui.py anaconda-11.1.2.195.frameos/gui.py
+--- anaconda-11.1.2.195/gui.py	2009-08-05 16:32:40.000000000 +0200
++++ anaconda-11.1.2.195.frameos/gui.py	2010-06-10 14:44:27.450841596 +0200
+@@ -54,7 +54,7 @@
+ mainWindow = None
+ 
+ stepToClass = {
+-    "language" : ("language_gui", "LanguageWindow"),
++#    "language" : ("language_gui", "LanguageWindow"),
+     "keyboard" : ("kbd_gui", "KeyboardWindow"),
+     "mouse" : ("mouse_gui", "MouseWindow"),
+     "welcome" : ("welcome_gui", "WelcomeWindow"),

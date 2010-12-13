@@ -1,0 +1,11 @@
+--- anaconda-11.1.2.195/constants.py	2009-08-05 16:32:40.000000000 +0200
++++ anaconda-11.1.2.195.frameos/constants.py	2010-06-10 15:34:33.940112239 +0200
+@@ -17,7 +17,7 @@
+ 
+ BETANAG = 0
+ 
+-SELINUX_DEFAULT = 1
++SELINUX_DEFAULT = 0
+ 
+ DISPATCH_BACK = -1
+ DISPATCH_FORWARD = 1

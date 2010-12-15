@@ -1,10 +1,10 @@
 Name: anaconda-ee
 Version: 11.1.2.195
-Release: 168.abiquo
+Release: 170.1.abiquo
 License: GPL
 Summary: Graphical system installer
 Group: Applications/System
-Source: %{name}-%{PACKAGE_VERSION}.tar.bz2
+Source: anaconda-%{PACKAGE_VERSION}.tar.bz2
 Provides: anaconda
 BuildPreReq: kudzu-devel >= 1.2.57.1.18, pciutils-devel
 BuildPreReq: bzip2-devel, e2fsprogs-devel, python-devel, gtk2-devel
@@ -150,6 +150,9 @@ fi
 /sbin/chkconfig --del reconfig >/dev/null 2>&1 || :
 
 %changelog
+* Wed Dec 15 2010 Sergio Rubio <rubiojr@frameos.org> - 11.1.2.195-170.1.abiquo
+- rename package to anaconda-ee 
+
 * Thu Sep 02 2010 Sergio Rubio <srubio@abiquo.com> 11.1.2.195-168.abiquo
 - Updated for 1.6.8
 

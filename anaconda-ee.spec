@@ -1,6 +1,6 @@
 Name: anaconda-ee
 Version: 11.1.2.195
-Release: 170.4.abiquo
+Release: 170.5.abiquo
 License: GPL
 Summary: Graphical system installer
 Group: Applications/System
@@ -150,6 +150,9 @@ fi
 /sbin/chkconfig --del reconfig >/dev/null 2>&1 || :
 
 %changelog
+* Tue Jan 18 2011 Sergio Rubio <srubio@abiquo.com> - 11.1.2.195-170.5.abiquo
+- minor fixes
+
 * Tue Jan 18 2011 Sergio Rubio <srubio@abiquo.com> - 11.1.2.195-170.4.abiquo
 - do not show abiquo server config screen (no longer required in 1.7)
 - updated remote services installer screen

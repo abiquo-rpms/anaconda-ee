@@ -1,0 +1,171 @@
+#!/bin/bash
+
+#makebootdisk required for EFI bootloader dosfs image
+makebootdisk() {
+    EXTRAKERNELPATH=""
+    INITRDFLAGS=""
+    MBD_FILENAME=""
+    INITRDFILE=""
+    MBD_TMPIMAGE=/tmp/makebootdisk.image.$$
+    MBD_BOOTTREE=/tmp/makebootdisk.tree.$$
+    MBD_BOOTTREE_TMP=$MBD_BOOTTREE'_tmp'
+    while [ x$(echo $1 | cut -c1-2) = x"--" ]; do
+	if [ $1 = "--kernelto" ]; then
+	    EXTRAKERNELPATH=$2
+	    shift; shift
+	    continue
+	elif [ $1 = "--initrdflags" ]; then
+	    INITRDFLAGS=$2
+	    shift; shift
+	    continue
+	elif [ $1 = "--initrd" ]; then
+	    INITRDFILE=$2
+	    shift; shift
+	    continue
+	elif [ $1 = "--imagename" ]; then
+	    MBD_FILENAME=$IMAGEPATH/$2
+	    shift; shift
+	    continue
+	fi
+	echo "Unknown option passed to makebootdisk"
+	exit 1
+    done
+
+    if [ -z "$MBD_FILENAME" ]; then
+	echo "No imagename passed"
+	exit 1
+    fi
+
+    if [ -n "$INITRDFILE" ]; then
+	MBD_FSIMAGE="$INITRDFILE"
+    elif [ -n "$INITRDFLAGS" ]; then
+	eval makeinitrd --keep $INITRDFLAGS
+    fi
+
+    mkdir -p $MBD_BOOTTREE
+    mkdir -p $MBD_BOOTTREE_TMP
+    rm -rf $MBD_BOOTTREE_TMP
+    mkdir -p $MBD_TMPIMAGE
+
+    # provided by the mk-image.$ARCH file
+    prepareBootImage
+
+    left=$(df $MBD_BOOTTREE | tail -n1)
+    left=$(echo $left | awk '{print $4'})
+
+    umount $MBD_BOOTTREE
+
+    if [ -n "$EXTRAKERNELPATH" ]; then
+	mkdir -p `dirname $EXTRAKERNELPATH`
+	cp -f $KERNELROOT/$KERNELDIR/${KERNELNAME}-* $EXTRAKERNELPATH
+    fi
+
+    mkdir -p `dirname $MBD_FILENAME`
+    rm -rf $MBD_TMPIMAGE $MBD_MNTPOINT $MBD_BOOTTREE
+    if [ -z "$INITRDFILE" ]; then
+	rm -f $MBD_FSIMAGE
+    fi
+
+    echo "Wrote $MBD_FILENAME (${left}k free)"
+}
+
+prepareBootImage() {
+
+	prepareBootTree
+
+	# dynamically calculate the size of the dosfs
+	BOOTDISKSIZE=$(du -kcs $MBD_BOOTTREE_TMP | tail -n1 | awk '{print $1}')
+	BOOTDISKSIZE=$(expr $BOOTDISKSIZE + 100)
+	echo "The size of the boot.img dosfs is $BOOTDISKSIZE"
+	dd if=/dev/zero bs=1k count=$BOOTDISKSIZE of=$MBD_FILENAME 2>/dev/null
+	mkdosfs -C $MBD_FILENAME $BOOTDISKSIZE >/dev/null
+	mount -o loop -t vfat $MBD_FILENAME $MBD_BOOTTREE
+	[ $? = 0 ] || exit 1
+	cp -R $MBD_BOOTTREE_TMP/* $MBD_BOOTTREE
+}
+
+prepareBootTree() {
+	mkdir -p $MBD_BOOTTREE_TMP/EFI/boot
+	cp $MBD_FSIMAGE $MBD_BOOTTREE_TMP/EFI/boot/initrd.img
+
+	cp -a $BOOTDISKDIR/* $MBD_BOOTTREE_TMP/EFI/boot/
+	cp $KERNELROOT/boot/efi/EFI/redhat/vmlinuz-* $MBD_BOOTTREE_TMP/EFI/boot/vmlinuz
+
+	cp $MBD_BOOTTREE_TMP/EFI/boot/elilo.efi $MBD_BOOTTREE_TMP/EFI/boot/bootia64.efi
+	cat > $MBD_BOOTTREE_TMP/EFI/boot/elilo.conf << EOF
+prompt	
+timeout=50
+relocatable
+
+image=vmlinuz
+        label=linux
+        read-only
+	initrd=initrd.img
+EOF
+
+	# make a copy in the root of the image
+	cp $MBD_BOOTTREE_TMP/EFI/boot/* $MBD_BOOTTREE_TMP
+}
+
+makeBootImages() {
+  if [ "$kerneltag" != "xen" ]; then
+    # Because ia64 boxes use EFI there needs to be a boot.img dosfs.
+    echo "making boot.img for EFI bootloader"
+    makebootdisk --kernelto $TOPDESTPATH/kernels/vmlinuz  \
+	--imagename boot.img \
+	--initrdflags '--initrdto $TOPDESTPATH/images/ramdisk.img \
+		     	    --initrdsize 12288 \
+			    --loaderbin loader \
+			    --modules "$INITRDMODS sgiioc4" '
+
+
+    mkdir -p $TOPDESTPATH/images/pxeboot
+    makeinitrd --initrdto $TOPDESTPATH/images/pxeboot/initrd.img \
+	--initrdsize 12288 \
+	--loaderbin loader \
+	--modules "$INITRDMODS sgiioc4"
+    [ $? = 0 ] || exit 1
+    mv $TOPDESTPATH/kernels/vmlinuz $TOPDESTPATH/images/pxeboot/vmlinuz
+    rmdir $TOPDESTPATH/kernels
+
+    # make a boot iso
+    mkdir -p $TOPDESTPATH/images/isopath
+    cp -l $TOPDESTPATH/images/boot.img $TOPDESTPATH/images/isopath
+    mkisofs -quiet -o $TOPDESTPATH/images/boot.iso -b boot.img -no-emul-boot -R -J -V "$PRODUCT" -T $TOPDESTPATH/images/isopath
+    rm -rf $TOPDESTPATH/images/isopath
+
+    # make a pxe dir with kernel + initrd
+    cat > $TOPDESTPATH/images/pxeboot/README <<EOF
+The files in this directory are useful for booting a machine via PXE.  
+
+The following files are available:
+vmlinuz - the kernel used for the installer
+initrd.img - an initrd with support for all install methods and
+    drivers supported for installation of $PRODUCT
+EOF
+    cat << __EOT__ >> $TOPDESTPATH/.treeinfo
+[images-$KERNELARCH]
+kernel = images/pxeboot/vmlinuz
+initrd = images/pxeboot/initrd.img
+boot.iso = images/boot.iso
+boot.img = images/boot.img
+
+__EOT__
+
+  else # set up the boot stuff for the xen guest kernel
+    echo "Building $KERNELARCH guest initrd.img"
+    mkdir -p $TOPDESTPATH/images/xen
+    makeinitrd --initrdto $TOPDESTPATH/images/xen/initrd.img \
+	--initrdsize 12288 \
+	--loaderbin loader \
+	--modules "$INITRDMODS"
+    [ $? = 0 ] || exit 1
+    cp $KERNELROOT/boot/efi/EFI/redhat/vmlinuz-*xen* $TOPDESTPATH/images/xen/vmlinuz
+    cat << __EOT__ >> $TOPDESTPATH/.treeinfo
+[images-xen]
+kernel = images/xen/vmlinuz
+initrd = images/xen/initrd.img
+
+__EOT__
+  fi
+}

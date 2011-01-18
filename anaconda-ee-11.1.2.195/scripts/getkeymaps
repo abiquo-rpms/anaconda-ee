@@ -1,0 +1,51 @@
+#!/bin/sh
+
+ARCH=$1
+if [ -z "$ARCH" ]; then
+    echo "usage: $0 <arch>"
+    exit 1
+fi
+
+TOPDIR=`pwd`
+OUTPUT=$2
+if [ -z "$OUTPUT" ]; then
+    echo "No output specified, using /tmp/keymaps-$ARCH.$$"
+    OUTPUT=/tmp/keymaps-$ARCH.$$
+fi
+
+UTILDIR=$3
+if [ -z "$UTILDIR" ]; then
+    READMAP=../utils/readmap
+    MAPSHDR=$TOPDIR/../utils/mapshdr
+else    
+    READMAP=$UTILDIR/usr/lib/anaconda-runtime/readmap
+    MAPSHDR=$UTILDIR/usr/lib/anaconda-runtime/mapshdr
+fi
+
+TMPDIR=/tmp/keymaps.$$
+
+rm -rf $TMPDIR
+mkdir -p $TMPDIR
+
+if [ $ARCH = "sparc" ]; then
+    PATTERN={i386,sun}
+else
+    PATTERN=i386
+fi
+
+MAPS=$(python -c "import rhpl.keyboard_models ; rhpl.keyboard_models.get_supported_models()")
+
+for map in $MAPS ; do 
+ eval find /lib/kbd/keymaps/$PATTERN -name "$map.map*" | while read n; do
+    /bin/loadkeys `basename $n .gz` >/dev/null
+    $READMAP $TMPDIR/`basename $n .map.gz`.map
+  done
+done
+
+loadkeys us
+
+rm -f $TMPDIR/defkeymap* $TMPDIR/ANSI* $TMPDIR/lt.map
+
+(cd $TMPDIR; $MAPSHDR *.map) > $TMPDIR/hdr
+cat $TMPDIR/hdr $TMPDIR/*.map | gzip -9 > $OUTPUT
+rm -rf $TMPDIR

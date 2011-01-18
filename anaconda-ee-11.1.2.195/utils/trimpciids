@@ -1,0 +1,62 @@
+#!/usr/bin/python
+
+import sys
+import os
+import string
+
+vendors = []
+devices = []
+
+f = open(sys.argv[1])
+if f:
+	pcitable = f.readlines()
+	f.close()
+	for line in pcitable:
+	    if not line.startswith("alias pci:"):
+		continue
+	    vend = "0x%s" % (line[15:19],)
+	    dev = "0x%s" % (line[24:28],)
+	    vend = vend.upper()
+	    dev = dev.upper()
+	    if vend not in vendors:
+		vendors.append(vend)
+	    if (vend, dev) not in devices:
+		devices.append( (vend, dev) )
+
+for file in sys.argv[2:]:
+   if not os.path.exists(file):
+       sys.stderr.write("WARNING: non-existent file %s for trimpciids\n" %(file,))
+       continue
+   f = open(file)
+   if f:
+	pcitable = f.readlines()
+	f.close()
+	for line in pcitable:
+	    if not line.startswith("alias pcivideo:"):
+		continue
+	    vend = "0x%s" % (line[20:24],)
+	    dev = "0x%s" % (line[29:33],)
+	    vend = vend.upper()
+	    dev = dev.upper()
+	    if vend not in vendors:
+		vendors.append(vend)
+	    if (vend, dev) not in devices:
+		devices.append( (vend, dev) )
+
+pciids = sys.stdin.readlines()
+current_vend = 0
+for line in pciids:
+    if line.startswith("#") or line == "\n":
+	continue
+    if line.startswith("\t\t"):
+	continue
+    if not line.startswith("\t"):
+	current_vend = "0x%s" % line.split()[0]
+	current_vend = current_vend.upper()
+	if current_vend in vendors:
+	    print line,
+	continue
+    dev = "0x%s" % line.split()[0]
+    dev = dev.upper()
+    if (current_vend, dev) in devices:
+	print line,

@@ -1,0 +1,34 @@
+S390SCSIMODS="zfcp tape390"
+S390DASDMODS=" dasd_diag_mod dasd_eckd_mod dasd_fba_mod dasd_mod"
+S390NETMODS="ctc netiucv smsgiucv lcs qdio qeth ccwgroup crypto_api xfrm_nalgo"
+S390MODS="$S390SCSIMODS $S390DASDMODS $S390NETMODS"
+
+makeBootImages() {
+	makeinitrd --initrdto $TOPDESTPATH/images/initrd.img \
+	    --initrdsize 20000 \
+	    --loaderbin loader \
+	    --modules "$INITRDMODS $S390MODS"
+	sz=$(ls -l $TOPDESTPATH/images/initrd.img | awk '{print $5}')
+	$GENINITRDSZ $sz $TOPDESTPATH/images/initrd.size
+	cp -vf $KERNELROOT/boot/${KERNELNAME}-${version} $TOPDESTPATH/images/kernel.img
+
+	cp -v $BOOTDISKDIR/generic.prm $TOPDESTPATH/images/generic.prm
+	cp -v $BOOTDISKDIR/generic.ins $TOPDESTPATH/generic.ins
+
+   $MKS390CDBOOT \
+      -i $TOPDESTPATH/images/kernel.img \
+      -r $TOPDESTPATH/images/initrd.img \
+      -p $TOPDESTPATH/images/generic.prm \
+      -o $TOPDESTPATH/images/cdboot.img
+
+    cat << __EOT__ >> $TOPDESTPATH/.treeinfo
+[images-$KERNELARCH]
+kernel = images/kernel.img
+initrd = images/initrd.img
+initrd.size = images/initrd.size
+generic.prm = images/generic.prm
+generic.ins = generic.ins
+cdboot.img = images/cdboot.img
+
+__EOT__
+}

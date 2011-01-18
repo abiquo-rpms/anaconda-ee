@@ -1,0 +1,206 @@
+#!/usr/bin/python
+# 
+# Paul Nasrat <pnasrat@redhat.com>
+# Copyright 2005 Red Hat, Inc.
+#
+# This software may be freely redistributed under the terms of the GNU
+# library public license.
+#
+# You should have received a copy of the GNU Library Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+import os
+import fnmatch
+import rpm
+import rpmUtils
+import shutil
+import sys
+import yum
+
+sys.path.append("/usr/lib/anaconda")
+
+import anaconda_log
+import logging
+logger = logging.getLogger("anaconda")
+handler = logging.StreamHandler()
+handler.setLevel(logging.ERROR)
+logger.addHandler(handler)
+
+from optparse import OptionParser
+from yum.packageSack import PackageSack
+from yum.packages import PackageObject
+from yuminstall import YumSorter
+
+class PackageOrderer(YumSorter):
+
+    def __init__(self, arch=None):
+        YumSorter.__init__(self)
+        self.arch = arch
+        self._installed = PackageSack()
+
+    def doFileLogSetup(self, uid, logfile):
+        pass
+
+    def doLoggingSetup(self, *args, **kwargs):
+        pass
+
+    def setup(self, fn="/etc/yum.conf", root="/", excludes=[]):
+        self.doConfigSetup(fn, root, init_plugins = False)
+        self.conf.cache = 0
+#         if hasattr(self.repos, 'sqlite'):
+#             self.repos.sqlite = False
+#             self.repos._selectSackType()
+        exclude = self.conf.exclude
+        exclude.extend(excludes)
+        self.conf.exclude = exclude
+        cachedir = yum.misc.getCacheDir()
+        self.repos.setCacheDir(cachedir) 
+        self.repos.setCache(0) 
+        self.doRepoSetup()
+
+        self.doSackSetup(rpmUtils.arch.getArchList(self.arch))
+        self.doTsSetup()
+        self.doGroupSetup()
+        self.repos.populateSack('enabled', 'filelists')
+
+    def getDownloadPkgs(self):
+        pass
+
+#XXX: sigh
+processed = {}
+def processTransaction(ds):
+    del ds.ts
+    ds.initActionTs()
+    ds.populateTs(keepold=0)
+    ds.ts.check()
+    ds.ts.order()
+
+    # Return if there are no packages in the transaction set
+    if not ds.ts.ts.getKeys():
+        return
+
+    for (hdr, path) in ds.ts.ts.getKeys():
+        fname = os.path.basename(path)
+        fpattern = "%s*" % fname.rsplit('.', 2)[0]
+        printMatchingPkgs(fpattern)
+
+def printMatchingPkgs(fpattern):
+    global processed
+    global packages
+
+    matches = fnmatch.filter(packages, fpattern)
+
+    for match in matches:
+        mname = os.path.basename(match)
+        if processed.has_key(mname): continue
+        processed[mname] = True
+        print mname
+
+def addGroups(ds, groupLst):
+    ds.initActionTs()
+    map(ds.selectGroup, filter(lambda x: ds.comps.has_group(x), groupLst))
+    ds.resolveDeps()
+    processTransaction(ds)
+
+def createConfig(toppath):
+    yumconfstr = """
+[main]
+distroverpkg=redhat-release
+gpgcheck=0
+reposdir=/dev/null
+exclude=*debuginfo*
+
+[anaconda]
+name=Anaconda
+baseurl=file://%s
+enabled=1
+""" % (toppath)
+    
+    try:
+        (fd, path) = tempfile.mkstemp("", "yum-conf-", toppath)
+    except (OSError, IOError), e:
+        print >> sys.stderr, "Error writing to %s" % (toppath,)
+        sys.exit(1)
+    os.write(fd, yumconfstr)
+    os.close(fd)
+    return path
+
+def usage():
+    print >> sys.stderr, "pkgorder <toppath> <arch> <productpath>"
+    print >> sys.stderr, "<arch>: use rpm architecture for tree, eg i686"
+
+if __name__ == "__main__":
+    import tempfile
+    parser = OptionParser()
+    parser.add_option("--debug", action="store_true", dest="debug", default=False)
+    parser.add_option("--file", action="store", dest="file")
+    parser.add_option("--product", action="store", dest="productPath", )
+    parser.add_option("--exclude", action="append", dest="excludeList",
+                      default=[])
+
+    (options, args) = parser.parse_args()
+     
+    if len(args) != 3:
+	usage()
+        sys.exit(1)
+
+    (toppath, arch, product) = args
+    config = createConfig(toppath)
+
+    # Boo.
+    if arch == "i386":
+        arch = "i686"
+
+    packages = []
+    for dir in ("%s/%s/RPMS" % (toppath, product),
+                "%s/%s" % (toppath, product),
+                toppath):
+        if os.path.isdir(dir):
+            packages = os.listdir(dir)
+            break
+    packages.sort()
+
+    # print out kernel related packages first
+    printMatchingPkgs("kernel-*")
+
+    testpath = "/tmp/pkgorder-%d" %(os.getpid(),)
+    os.system("mkdir -p %s/var/lib/rpm" %(testpath,))
+    
+    ds = PackageOrderer(arch=arch)
+    ds.setup(fn=config, excludes=options.excludeList, root = testpath)
+
+    addGroups(ds, ["core", "base", "text-internet"])
+
+    # hack, hack, hack... make sure iscsi ends up on disc1 (#208832)
+    printMatchingPkgs("iscsi-*")
+
+    addGroups(ds, ["base-x", "dial-up",
+                   "graphical-internet", "editors", 
+                   "graphics", "gnome-desktop", "sound-and-video",
+                   "printing"])
+
+    addGroups(ds, ["office", "engineering-and-scientific",
+                   "authoring-and-publishing", "games"])
+
+    addGroups(ds, ["web-server", "ftp-server", "sql-server",
+                   "mysql", "server-cfg", "dns-server",
+                   "smb-server", "admin-tools"])
+
+    addGroups(ds, ["kde-desktop", "development-tools", "development-libs",
+                   "gnome-software-development", "eclipse",
+                   "x-software-development",
+                   "java-development", "kde-software-development",
+                   "mail-server", "network-server", "legacy-network-server"])
+
+    addGroups(ds, ["news-server", "legacy-software-development"])
+
+    #Everthing else but kernels
+    for po in ds.pkgSack.returnPackages():
+        if po.pkgtup not in ds._installed.returnPackages():
+            if po.name.find("kernel") == -1:
+                member = ds.tsInfo.addInstall(po)
+
+    ds.resolveDeps()
+    processTransaction(ds)
+    os.unlink(config)
+    shutil.rmtree(testpath)

@@ -1,0 +1,27 @@
+#!/bin/sh
+# Updates an installer initrd with a new loader binary 
+# Usage: upd-initrd <initrd> <binary> <outfile>
+#
+# Jeremy Katz <katzj@redhat.com>
+# Copyright 2005   Red Hat, Inc.
+
+if [ $# -ne 3 ]; then
+    echo "Usage: $0 <initrd> <binary> <outfile>"
+    exit 1
+fi
+
+INITRD=`readlink -f $1`
+BIN=`readlink -f $2`
+if [ -f $3 ]; then
+    OUT=`readlink -f $3`
+else
+    OUT=`readlink -f .`/$3
+fi
+
+tmpdir=$(mktemp -d)
+pushd $tmpdir
+zcat $INITRD |cpio -id
+strip -s -o sbin/$(basename $BIN) $BIN
+(find . |cpio -c -o |gzip -9) > $OUT
+popd
+rm -rf $tmpdir

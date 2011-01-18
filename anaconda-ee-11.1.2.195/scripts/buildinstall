@@ -1,0 +1,170 @@
+#!/bin/bash
+
+usage() {
+  echo "Usage: buildinstall [--pkgorder <file>] [--comps <file>] [--version <version>] [--product <product>] [--release <comment>] [--prodpath <path>] [--discs <discstring>] <root>" >&2
+	exit 1
+}
+
+PRODUCTPATH="anaconda"
+
+while [ $# -gt 0 ]; do
+    case $1 in
+	--pkgorder)
+	    PKGORDER=$2
+	    PKGORDERSTR="--pkgorder $2"
+	    shift; shift
+	    ;;
+	--comp)
+	    COMPNAME=$2
+	    shift; shift
+	    ;;
+	--comps)
+	    COMPSFILE=$2
+	    shift; shift
+	    ;;
+	--version)
+	    VERSION=$2
+	    shift; shift
+	    ;;
+	--release)
+	    RELEASESTR=$2
+	    shift; shift
+	    ;;
+        --product)
+	    PRODUCTSTR=$2
+	    shift; shift
+	    ;;
+	--variant)
+	    VARIANT=$2
+	    shift; shift
+	    ;;
+	--prodpath)
+	    PRODUCTPATH=$2
+	    shift; shift
+	    ;;
+	--nogr)
+	    NOGRSTR="--nogr"
+	    shift
+	    ;;
+	--debug)
+	    DEBUGSTR="--debug"
+	    shift
+	    ;;
+	--buildinstdir)
+	    BUILDINSTDIR=$2
+	    shift; shift
+	    ;;
+	--discs)
+	    DISCSTR=$2
+	    shift; shift
+	    ;;
+	--bugurl)
+	    BUGURL=$2
+	    shift; shift
+	    ;;
+	*)
+	    DIR=$1
+	    shift
+	    ;;
+    esac
+done
+
+if [ -z "$PRODUCTSTR" ]; then
+    usage
+fi
+
+if [ -z "$VERSION" ]; then
+    usage
+fi
+
+if [ -z "$DIR" ]; then
+    usage
+fi
+
+if [ -z "$RELEASESTR" ]; then
+    usage
+fi
+
+if [ -z "$DISCSTR" ]; then
+    DISCSTR="ALL"
+fi
+
+if [ -z "$BUGURL" ]; then
+    BUGURL="your distribution provided bug reporting tool."
+fi
+
+if [ -z "$COMPSFILE" ]; then
+    COMPSFILE="$PRODUCTPATH/base/comps.xml"
+fi
+
+p=`cd $DIR; /bin/pwd`
+if [ -d $DIR/$PRODUCTPATH/RPMS ]; then
+    PKGDIR=$p/$PRODUCTPATH/RPMS
+else
+    PKGDIR=$p/$PRODUCTPATH
+fi
+
+if [ -z "$BUILDINSTDIR" ]; then
+    BUILDINSTDIR=$p/buildinstall.tree.$$
+    rm -rf $BUILDINSTDIR
+    mkdir -p $BUILDINSTDIR
+fi
+TREEDIR=/tmp/treedir.$$
+
+UPD_INSTROOT=$BUILDINSTDIR/upd-instroot
+MK_IMAGES=$BUILDINSTDIR/mk-images
+MK_TREEINFO=$BUILDINSTDIR/maketreeinfo.py
+MK_STAMP=$BUILDINSTDIR/makestamp.py
+BUILDINSTALL=$BUILDINSTDIR/buildinstall
+
+BUILDARCH=`rpm -qp --qf "%{ARCH}" $PKGDIR/anaconda-runtime-[0-9]*`
+
+echo "Running buildinstall..."
+
+pushd $BUILDINSTDIR
+rpm2cpio $PKGDIR/anaconda-runtime-[0-9]* | cpio --quiet -iumd './usr*'
+popd
+
+UPD_INSTROOT=./upd-instroot
+MK_IMAGES=./mk-images
+MK_TREEINFO=./maketreeinfo.py
+MK_STAMP=./makestamp.py
+BUILDINSTALL=./buildinstall
+
+for f in $UPD_INSTROOT $MK_IMAGES $MK_STAMP $MK_TREEINFO $BUILDINSTALL; do
+    if [ ! -f $f ]; then
+	cp -a $BUILDINSTDIR/usr/lib/anaconda-runtime/$f* $BUILDINSTDIR/
+    else
+	cp -a $f* $BUILDINSTDIR/
+    fi
+done
+
+UPD_INSTROOT=$BUILDINSTDIR/upd-instroot
+MK_IMAGES=$BUILDINSTDIR/mk-images
+MK_TREEINFO=$BUILDINSTDIR/maketreeinfo.py
+MK_STAMP=$BUILDINSTDIR/makestamp.py
+BUILDINSTALL=$BUILDINSTDIR/buildinstall
+
+echo "Building images..."
+$UPD_INSTROOT $DEBUGSTR $NOGRSTR $PKGDIR $TREEDIR/image-template $TREEDIR/instimage
+
+if [ -n "$PKGORDER" ]; then
+    echo "Creating repository metadata..."
+    createrepo -g "$COMPSFILE" -q $p
+    echo "Getting package order..."
+    echo "PYTHONPATH=$TREEDIR/instimage/usr/lib/anaconda $TREEDIR/instimage/usr/lib/anaconda-runtime/pkgorder $p $BUILDARCH $PRODUCTPATH"
+    PYTHONPATH=$TREEDIR/instimage/usr/lib/anaconda $TREEDIR/instimage/usr/lib/anaconda-runtime/pkgorder $p $BUILDARCH $PRODUCTPATH > $PKGORDER
+fi
+
+echo "Writing .treeinfo file..."
+$MK_TREEINFO --family="$PRODUCTSTR" ${VARIANT:+--variant="$VARIANT"} --version=$VERSION --arch=$BUILDARCH --packagedir=$PRODUCTPATH --outfile=$p/.treeinfo
+
+echo "Making images..."
+$MK_IMAGES $DEBUGSTR $NOGRSTR $PKGDIR $p $TREEDIR/image-template $TREEDIR/instimage $BUILDARCH "$PRODUCTSTR" $VERSION $PRODUCTPATH "$BUGURL"
+rc=$?
+[ $rc = 0 ] || exit $rc
+
+echo "Writing .discinfo file"
+$MK_STAMP --releasestr="$RELEASESTR" --arch=$BUILDARCH --discNum="$DISCSTR" --baseDir=$PRODUCTPATH/base --packagesDir=$PKGDIR --pixmapsDir=$PRODUCTPATH/pixmaps --outfile=$p/.discinfo
+
+rm -rf $TREEDIR/image-template $TREEDIR/instimage $BUILDINSTDIR

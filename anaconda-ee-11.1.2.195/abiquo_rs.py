@@ -75,7 +75,7 @@ class AbiquoRS:
         self.abiquo_rabbitmq_host = '127.0.0.1'
         self.abiquo_rabbitmq_port = '5672'
         self.abiquo_appliancemanager_localRepositoryPath = '/opt/vm_repository/'
-        self.abiquo_appliancemanager_repositoryLocation  = '10.60.1.72:/opt/vm_repository/'
+        self.abiquo_appliancemanager_repositoryLocation  = '127.0.0.1:/opt/vm_repository/'
         self.abiquo_virtualfactory_hyperv_destinationRepositoryPath = '//127.0.0.1/vm_repository/'
         self.abiquo_virtualfactory_xenserver_repositoryLocation = '127.0.0.1:/opt/vm_repository/'
         self.abiquo_virtualfactory_vmware_repositoryLocation = '127.0.0.1:/opt/vm_repository/'

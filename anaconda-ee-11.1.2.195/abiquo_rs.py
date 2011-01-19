@@ -43,8 +43,8 @@ class AbiquoRS:
                 self.abiquo_appliancemanager_localRepositoryPath)
         f.write("abiquo.appliancemanager.repositoryLocation = %s\n" %
                 self.abiquo_appliancemanager_repositoryLocation)
-        f.write("abiquo.virtualfactory.hyperv.destinationRepositoryPath = %s\n" %
-                self.abiquo_virtualfactory_hyperv_destinationRepositoryPath)
+        f.write("abiquo.virtualfactory.hyperv.repositoryLocation = %s\n" %
+                self.abiquo_virtualfactory_hyperv_repositoryLocation )
         f.write("abiquo.virtualfactory.xenserver.repositoryLocation = %s\n" %
                 self.abiquo_virtualfactory_xenserver_repositoryLocation)
         f.write("abiquo.virtualfactory.vmware.repositoryLocation = %s\n" %

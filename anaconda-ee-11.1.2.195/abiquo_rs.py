@@ -44,7 +44,7 @@ class AbiquoRS:
         f.write("abiquo.appliancemanager.repositoryLocation = %s\n" %
                 self.abiquo_appliancemanager_repositoryLocation)
         f.write("abiquo.virtualfactory.hyperv.repositoryLocation = %s\n" %
-                self.abiquo_virtualfactory_hyperv_repositoryLocation )
+                self.abiquo_virtualfactory_hyperv_repositoryLocation)
         f.write("abiquo.virtualfactory.xenserver.repositoryLocation = %s\n" %
                 self.abiquo_virtualfactory_xenserver_repositoryLocation)
         f.write("abiquo.virtualfactory.vmware.repositoryLocation = %s\n" %
@@ -76,7 +76,7 @@ class AbiquoRS:
         self.abiquo_rabbitmq_port = '5672'
         self.abiquo_appliancemanager_localRepositoryPath = '/opt/vm_repository/'
         self.abiquo_appliancemanager_repositoryLocation  = '127.0.0.1:/opt/vm_repository/'
-        self.abiquo_virtualfactory_hyperv_destinationRepositoryPath = '//127.0.0.1/vm_repository/'
+        self.abiquo_virtualfactory_hyperv_repositoryLocation = '//127.0.0.1/vm_repository/'
         self.abiquo_virtualfactory_xenserver_repositoryLocation = '127.0.0.1:/opt/vm_repository/'
         self.abiquo_virtualfactory_vmware_repositoryLocation = '127.0.0.1:/opt/vm_repository/'
         self.abiquo_virtualfactory_storagelink_address = 'https://127.0.0.1:21605'

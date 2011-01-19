@@ -83,4 +83,4 @@ class AbiquoRS:
         self.abiquo_virtualfactory_storagelink_user = 'admin'
         self.abiquo_virtualfactory_storagelink_password = 'storagelink'
         self.abiquo_redis_host =  '127.0.0.1'
-        self.abiquo_redis_port = '5672'
+        self.abiquo_redis_port = '6379'

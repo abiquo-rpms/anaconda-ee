@@ -61,31 +61,36 @@ class Abiquo:
 """)
         f.close()
 
-        f = open(instPath + "/opt/abiquo/config/abiquo.properties", 'a')
-        f.write("[server]\n")
-        f.write("abiquo.server.sessionTimeout = %s\n" %
-                self.abiquo_server_sessionTimeout)
-        f.write("abiquo.server.mail.server = %s\n" % self.abiquo_server_mail_server)
-        f.write("abiquo.server.mail.user = %s\n" % self.abiquo_server_mail_user )
-        f.write("abiquo.server.mail.password = %s\n" %
-                self.abiquo_server_mail_password )
-        f.write("abiquo.server.api.location = %s\n" %
-                self.abiquo_server_api_location)
-        f.write("abiquo.rabbitmq.username = %s\n" %
-                self.abiquo_rabbitmq_username)
-        f.write("abiquo.rabbitmq.password = %s\n" %
-                self.abiquo_rabbitmq_password)
-        f.write("abiquo.rabbitmq.host = %s\n" %
-                self.abiquo_rabbitmq_host)
-        f.write("abiquo.rabbitmq.port = %s\n" %
-                self.abiquo_rabbitmq_port)
-        f.write("abiquo.database.user = %s\n" %
-                self.abiquo_database_user)
-        f.write("abiquo.database.password = %s\n" %
-                self.abiquo_database_password )
-        f.write("abiquo.database.host = %s\n" %
-                self.abiquo_database_host )
-        f.close()
+        #
+        # if abiquo config directory does not exist, we are installing a HV
+        # don't need this
+        #
+        if os.path.isdir(instPath + '/opt/abiquo/config/'):
+            f = open(instPath + "/opt/abiquo/config/abiquo.properties", 'a')
+            f.write("[server]\n")
+            f.write("abiquo.server.sessionTimeout = %s\n" %
+                    self.abiquo_server_sessionTimeout)
+            f.write("abiquo.server.mail.server = %s\n" % self.abiquo_server_mail_server)
+            f.write("abiquo.server.mail.user = %s\n" % self.abiquo_server_mail_user )
+            f.write("abiquo.server.mail.password = %s\n" %
+                    self.abiquo_server_mail_password )
+            f.write("abiquo.server.api.location = %s\n" %
+                    self.abiquo_server_api_location)
+            f.write("abiquo.rabbitmq.username = %s\n" %
+                    self.abiquo_rabbitmq_username)
+            f.write("abiquo.rabbitmq.password = %s\n" %
+                    self.abiquo_rabbitmq_password)
+            f.write("abiquo.rabbitmq.host = %s\n" %
+                    self.abiquo_rabbitmq_host)
+            f.write("abiquo.rabbitmq.port = %s\n" %
+                    self.abiquo_rabbitmq_port)
+            f.write("abiquo.database.user = %s\n" %
+                    self.abiquo_database_user)
+            f.write("abiquo.database.password = %s\n" %
+                    self.abiquo_database_password )
+            f.write("abiquo.database.host = %s\n" %
+                    self.abiquo_database_host )
+            f.close()
 
 
     def __init__(self):

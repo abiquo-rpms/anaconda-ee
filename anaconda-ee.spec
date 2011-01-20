@@ -1,6 +1,6 @@
 Name: anaconda-ee
 Version: 11.1.2.195
-Release: 170.10.abiquo
+Release: 170.11.abiquo
 License: GPL
 Summary: Graphical system installer
 Group: Applications/System
@@ -150,6 +150,10 @@ fi
 /sbin/chkconfig --del reconfig >/dev/null 2>&1 || :
 
 %changelog
+* Thu Jan 20 2011 Sergio Rubio <srubio@abiquo.com> - 11.1.2.195-170.11.abiquo
+- fixes in multiple profiles
+- Added abiquo-nfs-repository profile
+
 * Wed Jan 19 2011 Sergio Rubio <srubio@abiquo.com> - 11.1.2.195-170.10.abiquo
 - minor fixes
 

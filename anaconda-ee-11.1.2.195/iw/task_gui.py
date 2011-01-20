@@ -136,7 +136,7 @@ class TaskWindow(InstallWindow):
         
         if 'abiquo-virtualbox' in selected_groups:
             if ('abiquo-kvm' in selected_groups) or \
-                    ('abiquo-virtualbox' in selected_groups):
+                    ('abiquo-xen' in selected_groups):
                 self.intf.messageWindow(_("<b>Warning</b>"),
                            _("<b>Overlapping tasks selected</b>\n\n"
                              "You have selected <i>Abiquo VirtualBox</i> install. "
@@ -144,6 +144,15 @@ class TaskWindow(InstallWindow):
                              "select only one of VirtualBox/Xen/KVM and click next."),
                                     type="warning")
                 raise gui.StayOnScreen
+        
+        if ('cloud-in-a-box' in selected_groups) and \
+                ('abiquo-nfs-repository' in selected_groups):
+                    self.intf.messageWindow(_("<b>Warning</b>"),
+                            _("<b>Overlapping tasks selected</b>\n\n"
+                             "You have selected <i>Abiquo Cloud-in-a-Box</i> install. "
+                             "Deselect Abiquo NFS Repository, it's not required."),
+                            type="warning")
+                    raise gui.StayOnScreen
         
         if 'abiquo-remote-repository' in selected_groups:
             if 'cloud-in-a-box' in selected_groups:
@@ -182,10 +191,19 @@ class TaskWindow(InstallWindow):
                                     type="warning")
                 raise gui.StayOnScreen
 
-
         if 'cloud-in-a-box' in selected_groups:
             self.dispatch.skipStep("abiquo_rs", skip = 1)
             self.dispatch.skipStep("abiquo_hv", skip = 1)
+        
+        if ('abiquo-remote-services' in selected_groups) and \
+                ('abiquo-server' in selected_groups) and \
+                ('abiquo-v2v' in selected_groups):
+            self.dispatch.skipStep("abiquo_rs", skip = 1)
+            self.dispatch.skipStep("abiquo_hv", skip = 1)
+
+        if ('abiquo-nfs-repository' in selected_groups):
+            self.dispatch.skipStep("abiquo_v2v", skip = 1)
+
 
 
     def groupsInstalled(self, lst):

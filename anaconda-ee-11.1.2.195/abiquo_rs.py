@@ -29,37 +29,39 @@ class AbiquoRS:
         # dont do this in test mode!
         if flags.test:
             return
-        f = open(instPath + "/opt/abiquo/config/abiquo.properties", 'a')
-        f.write("[remote-services]\n")
-        f.write("abiquo.rabbitmq.username = %s\n" %
-                self.abiquo_rabbitmq_username)
-        f.write("abiquo.rabbitmq.password = %s\n" %
-                self.abiquo_rabbitmq_password)
-        f.write("abiquo.rabbitmq.host = %s\n" %
-                self.abiquo_rabbitmq_host)
-        f.write("abiquo.rabbitmq.port = %s\n" %
-                self.abiquo_rabbitmq_port)
-        f.write("abiquo.appliancemanager.localRepositoryPath = %s\n" %
-                self.abiquo_appliancemanager_localRepositoryPath)
-        f.write("abiquo.appliancemanager.repositoryLocation = %s\n" %
-                self.abiquo_appliancemanager_repositoryLocation)
-        f.write("abiquo.virtualfactory.hyperv.repositoryLocation = %s\n" %
-                self.abiquo_virtualfactory_hyperv_repositoryLocation)
-        f.write("abiquo.virtualfactory.xenserver.repositoryLocation = %s\n" %
-                self.abiquo_virtualfactory_xenserver_repositoryLocation)
-        f.write("abiquo.virtualfactory.vmware.repositoryLocation = %s\n" %
-                self.abiquo_virtualfactory_vmware_repositoryLocation)
-        f.write("abiquo.virtualfactory.storagelink.user = %s\n" %
-                self.abiquo_virtualfactory_storagelink_user)
-        f.write("abiquo.virtualfactory.storagelink.password = %s\n" %
-                self.abiquo_virtualfactory_storagelink_password)
-        f.write("abiquo.virtualfactory.storagelink.address = %s\n" %
-                self.abiquo_virtualfactory_storagelink_address)
-        f.write("abiquo.redis.port = %s\n" %
-                self.abiquo_redis_port)
-        f.write("abiquo.redis.host = %s\n" %
-                self.abiquo_redis_host)
-        f.close()
+
+        if os.path.isdir(instPath + "/opt/abiquo/config/"):
+            f = open(instPath + "/opt/abiquo/config/abiquo.properties", 'a')
+            f.write("[remote-services]\n")
+            f.write("abiquo.rabbitmq.username = %s\n" %
+                    self.abiquo_rabbitmq_username)
+            f.write("abiquo.rabbitmq.password = %s\n" %
+                    self.abiquo_rabbitmq_password)
+            f.write("abiquo.rabbitmq.host = %s\n" %
+                    self.abiquo_rabbitmq_host)
+            f.write("abiquo.rabbitmq.port = %s\n" %
+                    self.abiquo_rabbitmq_port)
+            f.write("abiquo.appliancemanager.localRepositoryPath = %s\n" %
+                    self.abiquo_appliancemanager_localRepositoryPath)
+            f.write("abiquo.appliancemanager.repositoryLocation = %s\n" %
+                    self.abiquo_appliancemanager_repositoryLocation)
+            f.write("abiquo.virtualfactory.hyperv.repositoryLocation = %s\n" %
+                    self.abiquo_virtualfactory_hyperv_repositoryLocation)
+            f.write("abiquo.virtualfactory.xenserver.repositoryLocation = %s\n" %
+                    self.abiquo_virtualfactory_xenserver_repositoryLocation)
+            f.write("abiquo.virtualfactory.vmware.repositoryLocation = %s\n" %
+                    self.abiquo_virtualfactory_vmware_repositoryLocation)
+            f.write("abiquo.virtualfactory.storagelink.user = %s\n" %
+                    self.abiquo_virtualfactory_storagelink_user)
+            f.write("abiquo.virtualfactory.storagelink.password = %s\n" %
+                    self.abiquo_virtualfactory_storagelink_password)
+            f.write("abiquo.virtualfactory.storagelink.address = %s\n" %
+                    self.abiquo_virtualfactory_storagelink_address)
+            f.write("abiquo.redis.port = %s\n" %
+                    self.abiquo_redis_port)
+            f.write("abiquo.redis.host = %s\n" %
+                    self.abiquo_redis_host)
+            f.close()
     
     def writeKS(self, f):
 	f.write("abiquo-remote-services --nfsrepository=%s\n" %

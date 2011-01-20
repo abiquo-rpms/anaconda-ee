@@ -170,8 +170,10 @@ class InstallData:
         self.security.write (self.anaconda.rootPath)
         self.users = users.Users()
 
-        self.abiquo.write (self.anaconda.rootPath)
-        self.abiquo_rs.write (self.anaconda.rootPath)
+        if self.anaconda.backend.isGroupSelected('abiquo-server'):
+            self.abiquo.write (self.anaconda.rootPath)
+        if self.anaconda.backend.isGroupSelected('abiquo-remote-services'):
+            self.abiquo_rs.write (self.anaconda.rootPath)
 
         # make sure crypt_style in libuser.conf matches the salt we're using
         users.createLuserConf(self.anaconda.rootPath, saltname=self.getSalt())

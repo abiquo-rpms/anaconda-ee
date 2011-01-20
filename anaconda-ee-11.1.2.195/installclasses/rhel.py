@@ -82,6 +82,28 @@ class InstallClass(BaseInstallClass):
 	dispatch.skipStep("regkey", skip = 1)        
 
     def postAction(self, anaconda, serial):
+        f = open(anaconda.rootPath + "/etc/motd", "w")
+
+        f.write("""
+
+                  Mb            
+                  Mb            
+                  Mb            H@
+      ..J++...J,  Mb ..JJJ..    .,    .......    ..,      ...   ...+JJ.
+    .dMY=!?7HNMP`.MNMB"??7TMm. .Mb  .JrC???7wo,  ,Hr      dM. .JM9=!?7WN,
+   JHD`      ?#P .M#:      .HN..Hb .wZ!     .zw!`,Hr      dM`.d#!     ``Mr
+   MN:        MP` MP`      `J#\.Hb ?O:       .rc ,Hr      dM`,HF        W#
+   dMp       .HP` MN,      .dM`.Hb `OO.     .J?:`,Mb     .dM`.MN.      .Mt
+    ?MNJ....gMMP .MMNa.....HB! .Hb  `zro...J?WN&. 7Mm....dM%` .WNa....+M=
+      `7TYY"^ "^  "^ ?TYYY=`    7=   ` ????!``?TY   ?TYY"^`     .?TY9"=`
+   
+   
+
+   Abiquo Release 1.7.0
+
+""")
+        f.close()
+
         if anaconda.backend.isGroupSelected('abiquo-nfs-repository'):
             f = open(anaconda.rootPath + "/etc/exports", "a")
             f.write("/opt/vm_repository    *(rw,no_root_squash,subtree_check,insecure)\n")
@@ -98,7 +120,7 @@ class InstallClass(BaseInstallClass):
                                     root=anaconda.rootPath)
             if not anaconda.backend.isGroupSelected('abiquo-nfs-repository'):
                 f = open(anaconda.rootPath + "/etc/fstab", "a")
-                f.write("%s /opt/vm_repository  nfs defaults    0 0" %
+                f.write("%s /opt/vm_repository  nfs defaults    0 0\n" %
                             anaconda.id.abiquo_rs.abiquo_nfs_repository )
                 f.close()
 
@@ -112,7 +134,7 @@ class InstallClass(BaseInstallClass):
         if anaconda.backend.isGroupSelected('abiquo-v2v'):
             if not anaconda.backend.isGroupSelected('abiquo-nfs-repository'):
                 f = open(anaconda.rootPath + "/etc/fstab", "a")
-                f.write("%s /opt/vm_repository  nfs defaults    0 0" %
+                f.write("%s /opt/vm_repository  nfs defaults    0 0\n" %
                             anaconda.id.abiquo_rs.abiquo_nfs_repository )
                 f.close()
 
@@ -217,7 +239,7 @@ brctlCmd = /usr/sbin/brctl
             if not anaconda.backend.isGroupSelected('cloud-in-a-box'):
                 if not anaconda.backend.isGroupSelected('abiquo-nfs-repository'):
                     f = open(anaconda.rootPath + "/etc/fstab", "a")
-                    f.write("%s /opt/vm_repository  nfs defaults    0 0" %
+                    f.write("%s /opt/vm_repository  nfs defaults    0 0\n" %
                         anaconda.id.abiquo_rs.abiquo_nfs_repository )
                     f.close()
             f = open(anaconda.rootPath + "/etc/abiquo-aim.ini", "w")

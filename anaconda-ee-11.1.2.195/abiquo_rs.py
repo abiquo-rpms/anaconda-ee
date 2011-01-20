@@ -44,13 +44,13 @@ class AbiquoRS:
             f.write("abiquo.appliancemanager.localRepositoryPath = %s\n" %
                     self.abiquo_appliancemanager_localRepositoryPath)
             f.write("abiquo.appliancemanager.repositoryLocation = %s\n" %
-                    self.abiquo_appliancemanager_repositoryLocation)
+                    self.abiquo_nfs_repository)
             f.write("abiquo.virtualfactory.hyperv.repositoryLocation = %s\n" %
                     self.abiquo_virtualfactory_hyperv_repositoryLocation)
             f.write("abiquo.virtualfactory.xenserver.repositoryLocation = %s\n" %
-                    self.abiquo_virtualfactory_xenserver_repositoryLocation)
+                    self.abiquo_nfs_repository)
             f.write("abiquo.virtualfactory.vmware.repositoryLocation = %s\n" %
-                    self.abiquo_virtualfactory_vmware_repositoryLocation)
+                    self.abiquo_nfs_repository)
             f.write("abiquo.virtualfactory.storagelink.user = %s\n" %
                     self.abiquo_virtualfactory_storagelink_user)
             f.write("abiquo.virtualfactory.storagelink.password = %s\n" %
@@ -62,9 +62,9 @@ class AbiquoRS:
             f.write("abiquo.redis.host = %s\n" %
                     self.abiquo_redis_host)
             f.close()
-    
+
     def writeKS(self, f):
-	f.write("abiquo-remote-services --nfsrepository=%s\n" %
+        f.write("abiquo-remote-services --nfsrepository=%s\n" %
                 self.abiquo_nfs_repository)
 
     def __init__(self):

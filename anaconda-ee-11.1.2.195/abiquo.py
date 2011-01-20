@@ -39,27 +39,6 @@ class Abiquo:
         if flags.test:
             return
         
-        f = open(instPath + "/etc/motd", "w")
-
-        f.write("""
-
-                  Mb            
-                  Mb            
-                  Mb            H@
-      ..J++...J,  Mb ..JJJ..    .,    .......    ..,      ...   ...+JJ.
-    .dMY=!?7HNMP`.MNMB"??7TMm. .Mb  .JrC???7wo,  ,Hr      dM. .JM9=!?7WN,
-   JHD`      ?#P .M#:      .HN..Hb .wZ!     .zw!`,Hr      dM`.d#!     ``Mr
-   MN:        MP` MP`      `J#\.Hb ?O:       .rc ,Hr      dM`,HF        W#
-   dMp       .HP` MN,      .dM`.Hb `OO.     .J?:`,Mb     .dM`.MN.      .Mt
-    ?MNJ....gMMP .MMNa.....HB! .Hb  `zro...J?WN&. 7Mm....dM%` .WNa....+M=
-      `7TYY"^ "^  "^ ?TYYY=`    7=   ` ????!``?TY   ?TYY"^`     .?TY9"=`
-   
-   
-
-   Abiquo Release 1.7.0
-
-""")
-        f.close()
 
         #
         # if abiquo config directory does not exist, we are installing a HV
@@ -74,8 +53,6 @@ class Abiquo:
             f.write("abiquo.server.mail.user = %s\n" % self.abiquo_server_mail_user )
             f.write("abiquo.server.mail.password = %s\n" %
                     self.abiquo_server_mail_password )
-            f.write("abiquo.server.api.location = %s\n" %
-                    self.abiquo_server_api_location)
             f.write("abiquo.rabbitmq.username = %s\n" %
                     self.abiquo_rabbitmq_username)
             f.write("abiquo.rabbitmq.password = %s\n" %
@@ -105,7 +82,6 @@ class Abiquo:
         self.abiquo_server_mail_server= '127.0.0.1'
         self.abiquo_server_mail_user= 'none@none.es'
         self.abiquo_server_mail_password = 'none'
-        self.abiquo_server_api_location = 'http://localhost/api/'
         self.abiquo_rabbitmq_username = 'guest'
         self.abiquo_rabbitmq_password = 'guest'
         self.abiquo_rabbitmq_host = '127.0.0.1'

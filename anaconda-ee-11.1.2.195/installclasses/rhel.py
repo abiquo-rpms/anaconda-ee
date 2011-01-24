@@ -103,6 +103,11 @@ class InstallClass(BaseInstallClass):
 
 """)
         f.close()
+        
+        if anaconda.backend.isGroupSelected('cloud-in-a-box'):
+            f = open(anaconda.rootPath + "/opt/abiquo/config/abiquo.properties", "a")
+            f.write("abiquo.virtualfactory.kvm.fullVirt = false\n")
+            f.close()
 
         if anaconda.backend.isGroupSelected('abiquo-nfs-repository'):
             f = open(anaconda.rootPath + "/etc/exports", "a")

@@ -70,6 +70,45 @@ class InstallClass(baseclass):
     def setInstallData(self, anaconda):
         baseclass.setInstallData(self, anaconda)
         anaconda.id.setUpgrade(True)
+
+    def postAction(self, anaconda, serial):
+        upgrade_168_to_17_post(anaconda)
     
     def __init__(self, expert):
 	baseclass.__init__(self, expert)
+
+def upgrade_168_to_17_post(anaconda):
+    f = open(anaconda.rootPath + "/etc/motd", "w")
+
+    f.write("""
+
+                  Mb            
+                  Mb            
+                  Mb            H@
+      ..J++...J,  Mb ..JJJ..    .,    .......    ..,      ...   ...+JJ.
+    .dMY=!?7HNMP`.MNMB"??7TMm. .Mb  .JrC???7wo,  ,Hr      dM. .JM9=!?7WN,
+   JHD`      ?#P .M#:      .HN..Hb .wZ!     .zw!`,Hr      dM`.d#!     ``Mr
+   MN:        MP` MP`      `J#\.Hb ?O:       .rc ,Hr      dM`,HF        W#
+   dMp       .HP` MN,      .dM`.Hb `OO.     .J?:`,Mb     .dM`.MN.      .Mt
+    ?MNJ....gMMP .MMNa.....HB! .Hb  `zro...J?WN&. 7Mm....dM%` .WNa....+M=
+      `7TYY"^ "^  "^ ?TYYY=`    7=   ` ????!``?TY   ?TYY"^`     .?TY9"=`
+   
+   
+
+   Abiquo Release 1.7.0
+
+""")
+    f.close()
+    iutil.execWithRedirect("/sbin/chkconfig",
+                            ['rabbitmq-server', "on"],
+                            stdout="/dev/tty5", stderr="/dev/tty5",
+                            root=anaconda.rootPath)
+    os.putenv('ABIQUO_CONFIG_HOME', '/opt/abiquo/backup/1.6.8/configs/')
+    os.putenv('ABIQUO_PROPERTIES', '/opt/abiquo/config/abiquo.properties')
+    iutil.execWithRedirect("/usr/bin/abiquo17-update-config", [''],
+                            stdout="/dev/tty5", stderr="/dev/tty5",
+                            root=anaconda.rootPath)
+    f = open(anaconda.rootPath + "/opt/abiquo/config/.upgradedb", "w")
+    f.write("kinton-delta-1_6_8-to-1_7_0.sql\n")
+    f.close()
+

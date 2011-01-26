@@ -1,6 +1,6 @@
 Name: anaconda-ee
 Version: 11.1.2.195
-Release: 170.14.abiquo
+Release: 170.15.abiquo
 License: GPL
 Summary: Graphical system installer
 Group: Applications/System
@@ -150,6 +150,9 @@ fi
 /sbin/chkconfig --del reconfig >/dev/null 2>&1 || :
 
 %changelog
+* Wed Jan 26 2011 Sergio Rubio <srubio@abiquo.com> - 11.1.2.195-170.15.abiquo
+- added the ability to upgrade from 1.6 to 1.7
+
 * Fri Jan 21 2011 Sergio Rubio <srubio@abiquo.com> - 11.1.2.195-170.14.abiquo
 - fixes in ciab profile
 

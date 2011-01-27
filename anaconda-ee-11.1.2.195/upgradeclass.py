@@ -78,6 +78,7 @@ class InstallClass(baseclass):
 	baseclass.__init__(self, expert)
 
 def upgrade_168_to_17_post(anaconda):
+    # write MOTD
     f = open(anaconda.rootPath + "/etc/motd", "w")
 
     f.write("""
@@ -99,16 +100,35 @@ def upgrade_168_to_17_post(anaconda):
 
 """)
     f.close()
-    iutil.execWithRedirect("/sbin/chkconfig",
-                            ['rabbitmq-server', "on"],
-                            stdout="/dev/tty5", stderr="/dev/tty5",
-                            root=anaconda.rootPath)
-    os.putenv('ABIQUO_CONFIG_HOME', '/opt/abiquo/backup/1.6.8/configs/')
-    os.putenv('ABIQUO_PROPERTIES', '/opt/abiquo/config/abiquo.properties')
-    iutil.execWithRedirect("/usr/bin/abiquo17-update-config", [''],
-                            stdout="/dev/tty5", stderr="/dev/tty5",
-                            root=anaconda.rootPath)
-    f = open(anaconda.rootPath + "/opt/abiquo/config/.upgradedb", "w")
-    f.write("kinton-delta-1_6_8-to-1_7_0.sql\n")
-    f.close()
 
+    #
+    # Disable abiquo-tomcat service so we can run upgrade scripts safely
+    # the first time the system starts after the upgrade
+    #
+    if os.path.exists(anaconda.rootPath + '/etc/init.d/abiquo-tomcat'):
+        iutil.execWithRedirect("/sbin/chkconfig",
+                                ['abiquo-tomcat', "off"],
+                                stdout="/dev/tty5", stderr="/dev/tty5",
+                                root=anaconda.rootPath)
+    #
+    # make sure rabbitmq-server is started in the Abiquo Server box
+    #
+    if os.path.exists(anaconda.rootPath + '/etc/init.d/rabbitmq-server'):
+        iutil.execWithRedirect("/sbin/chkconfig",
+                                ['rabbitmq-server', "on"],
+                                stdout="/dev/tty5", stderr="/dev/tty5",
+                                root=anaconda.rootPath)
+
+    #
+    # Write the new (1.7) properties file in the RS and Server box
+    # 
+    if os.path.exists(anaconda.rootPath + '/opt/abiquo/backup/1.6.8/configs/virtualfactory.xml') or \
+            os.path.exists(anaconda.rootPath + '/opt/abiquo/backup/1.6.8/configs/server.xml'):
+        os.putenv('ABIQUO_CONFIG_HOME', '/opt/abiquo/backup/1.6.8/configs/')
+        os.putenv('ABIQUO_PROPERTIES', '/opt/abiquo/config/abiquo.properties')
+        iutil.execWithRedirect("/usr/bin/abiquo17-update-config", [''],
+                                stdout="/dev/tty5", stderr="/dev/tty5",
+                                root=anaconda.rootPath)
+        f = open(anaconda.rootPath + "/opt/abiquo/config/.needsupgrade", "w")
+        f.write("17-nuclear-launch\n")
+        f.close()

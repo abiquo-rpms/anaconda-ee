@@ -1,6 +1,6 @@
 Name: anaconda-ee
 Version: 11.1.2.195
-Release: 170.16.abiquo
+Release: 170.17.abiquo
 License: GPL
 Summary: Graphical system installer
 Group: Applications/System
@@ -150,6 +150,9 @@ fi
 /sbin/chkconfig --del reconfig >/dev/null 2>&1 || :
 
 %changelog
+* Thu Jan 27 2011 Sergio Rubio <srubio@abiquo.com> - 11.1.2.195-170.17.abiquo
+- do not disable abiquo-tomcat service when upgrading
+
 * Thu Jan 27 2011 Sergio Rubio <srubio@abiquo.com> - 11.1.2.195-170.16.abiquo
 - fixes to the upgrade process 
 

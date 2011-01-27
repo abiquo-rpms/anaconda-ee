@@ -105,11 +105,11 @@ def upgrade_168_to_17_post(anaconda):
     # Disable abiquo-tomcat service so we can run upgrade scripts safely
     # the first time the system starts after the upgrade
     #
-    if os.path.exists(anaconda.rootPath + '/etc/init.d/abiquo-tomcat'):
-        iutil.execWithRedirect("/sbin/chkconfig",
-                                ['abiquo-tomcat', "off"],
-                                stdout="/dev/tty5", stderr="/dev/tty5",
-                                root=anaconda.rootPath)
+    #if os.path.exists(anaconda.rootPath + '/etc/init.d/abiquo-tomcat'):
+    #    iutil.execWithRedirect("/sbin/chkconfig",
+    #                            ['abiquo-tomcat', "off"],
+    #                            stdout="/dev/tty5", stderr="/dev/tty5",
+    #                            root=anaconda.rootPath)
     #
     # make sure rabbitmq-server is started in the Abiquo Server box
     #

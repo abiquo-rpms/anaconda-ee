@@ -103,6 +103,16 @@ class InstallClass(BaseInstallClass):
 
 """)
         f.close()
+
+        if (anaconda.backend.isGroupSelected('abiquo-kvm') or \
+                anaconda.backend.isGroupSelected('abiquo-xen') or \
+                anaconda.backend.isGroupSelected('abiquo-v2v') or \
+                anaconda.backend.isGroupSelected('abiquo-remote-services')) and \
+                not anaconda.backend.isGroupSelected('abiquo-nfs-repository'):
+                    f = open(anaconda.rootPath + "/etc/fstab", "a")
+                    f.write("%s /opt/vm_repository  nfs defaults    0 0\n" %
+                                anaconda.id.abiquo_rs.abiquo_nfs_repository )
+                    f.close()
         
         if anaconda.backend.isGroupSelected('cloud-in-a-box'):
             f = open(anaconda.rootPath + "/opt/abiquo/config/abiquo.properties", "a")
@@ -123,11 +133,6 @@ class InstallClass(BaseInstallClass):
                                     ['dhcpd', "on"],
                                     stdout="/dev/tty5", stderr="/dev/tty5",
                                     root=anaconda.rootPath)
-            if not anaconda.backend.isGroupSelected('abiquo-nfs-repository'):
-                f = open(anaconda.rootPath + "/etc/fstab", "a")
-                f.write("%s /opt/vm_repository  nfs defaults    0 0\n" %
-                            anaconda.id.abiquo_rs.abiquo_nfs_repository )
-                f.close()
 
         if anaconda.backend.isGroupSelected('abiquo-server') or \
                 anaconda.backend.isGroupSelected('cloud-in-a-box'):
@@ -135,13 +140,6 @@ class InstallClass(BaseInstallClass):
                                             ['rabbitmq-server', "on"],
                                             stdout="/dev/tty5", stderr="/dev/tty5",
                                             root=anaconda.rootPath)
-
-        if anaconda.backend.isGroupSelected('abiquo-v2v'):
-            if not anaconda.backend.isGroupSelected('abiquo-nfs-repository'):
-                f = open(anaconda.rootPath + "/etc/fstab", "a")
-                f.write("%s /opt/vm_repository  nfs defaults    0 0\n" %
-                            anaconda.id.abiquo_rs.abiquo_nfs_repository )
-                f.close()
 
         iutil.execWithRedirect("/sbin/chkconfig",
                                 ['mysqld', "on"],
@@ -222,12 +220,7 @@ vconfigCmd = /sbin/vconfig
 brctlCmd = /usr/sbin/brctl
 """ % anaconda.id.abiquo.abiquo_rs_ip)
                 f.close()
-                if not anaconda.backend.isGroupSelected('cloud-in-a-box'):
-                    if not anaconda.backend.isGroupSelected('abiquo-nfs-repository'):
-                        f = open(anaconda.rootPath + "/etc/fstab", "a")
-                        f.write("%s /opt/vm_repository  nfs defaults    0 0\n" %
-                            anaconda.id.abiquo_rs.abiquo_nfs_repository )
-                        f.close()
+        
         if anaconda.backend.isGroupSelected('abiquo-xen'):
             # replace default kernel entry
             f = open(anaconda.rootPath + '/boot/grub/menu.lst')
@@ -240,13 +233,6 @@ brctlCmd = /usr/sbin/brctl
                                 line))
             fw.close()
 
-            
-            if not anaconda.backend.isGroupSelected('cloud-in-a-box'):
-                if not anaconda.backend.isGroupSelected('abiquo-nfs-repository'):
-                    f = open(anaconda.rootPath + "/etc/fstab", "a")
-                    f.write("%s /opt/vm_repository  nfs defaults    0 0\n" %
-                        anaconda.id.abiquo_rs.abiquo_nfs_repository )
-                    f.close()
             f = open(anaconda.rootPath + "/etc/abiquo-aim.ini", "w")
             f.write("""
 # AIM configuration file

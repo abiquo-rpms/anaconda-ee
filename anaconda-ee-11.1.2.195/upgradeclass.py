@@ -126,7 +126,7 @@ def upgrade_168_to_17_post(anaconda):
             os.path.exists(anaconda.rootPath + '/opt/abiquo/backup/1.6.8/configs/server.xml'):
         os.putenv('ABIQUO_CONFIG_HOME', '/opt/abiquo/backup/1.6.8/configs/')
         os.putenv('ABIQUO_PROPERTIES', '/opt/abiquo/config/abiquo.properties')
-        iutil.execWithRedirect("/usr/bin/abiquo17-update-config", [''],
+        iutil.execWithRedirect("/opt/abiquo/tools/migrate-abiquo-16-xml-configs", [''],
                                 stdout="/dev/tty5", stderr="/dev/tty5",
                                 root=anaconda.rootPath)
         f = open(anaconda.rootPath + "/opt/abiquo/config/.needsupgrade", "w")

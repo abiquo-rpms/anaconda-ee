@@ -16,6 +16,10 @@ import os
 import iutil
 import rhpl
 
+import logging
+log = logging.getLogger("anaconda")
+
+
 baseclass = getBaseInstallClass()
 
 class InstallClass(baseclass):
@@ -100,6 +104,27 @@ def upgrade_168_to_17_post(anaconda):
 
 """)
     f.close()
+
+    # Migrate redis db to 1.7
+    if os.path.exists(anaconda.rootPath + '/opt/abiquo/tomcat/webapps/vsm') and \
+            os.path.exists(anaconda.rootPath + '/etc/init.d/redis'):
+                log.info("Migrating Abiquo 1.6.8 redis database...")
+                # loopback up
+                iutil.execWithRedirect("/sbin/ifconfig",
+                                        ['lo', 'up'],
+                                        stdout="/dev/tty5", stderr="/dev/tty5",
+                                        root=anaconda.rootPath)
+                # redis up
+                iutil.execWithRedirect("/usr/sbin/redis-server",
+                                        ['/etc/redis.conf'],
+                                        stdout="/dev/tty5", stderr="/dev/tty5",
+                                        root=anaconda.rootPath)
+                # apply update
+                iutil.execWithRedirect("/bin/bash",
+                                        ['/opt/abiquo/tools/migrate-abiquo-16-redis/migrate.sh'],
+                                        stdout="/mnt/sysimage/var/log/migrate-redis-16", stderr="/mnt/sysimage/var/log/migrate-redis-16",
+                                        root=anaconda.rootPath)
+
 
     #
     # Disable abiquo-tomcat service so we can run upgrade scripts safely

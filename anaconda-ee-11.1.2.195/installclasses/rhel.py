@@ -7,6 +7,8 @@ import os
 import iutil
 import types
 import re
+import shutil
+
 try:
     import instnum
 except ImportError:
@@ -159,6 +161,18 @@ class InstallClass(BaseInstallClass):
                                     root=anaconda.rootPath)
 
         if anaconda.backend.isGroupSelected('abiquo-ontap'):
+            log.info('Updating abiquo-ontap configuration...')
+            ontap_cfg = anaconda.rootPath + '/opt/abiquo/ontap/tomcat/webapps/ROOT/WEB-INF/classes/config.xml'
+            shutil.copy(anaconda.rootPath + '/usr/share/doc/abiquo-ontap/examples/config.xml',
+                        '%s' % (ontap_cfg,))
+            os.system('sed -i s/@@HOST@@/%s/ %s' % \
+                    (anaconda.id.abiquo_rs.ontap_server_ip,ontap_cfg))
+            os.system('sed -i s/@@USER@@/%s/ %s' % \
+                    (anaconda.id.abiquo_rs.ontap_user, ontap_cfg))
+            os.system('sed -i s/@@PASSWORD@@/%s/ %s' % \
+                    (anaconda.id.abiquo_rs.ontap_password, ontap_cfg))
+
+            log.info('Enabling abiquo-ontap service')
             iutil.execWithRedirect("/sbin/chkconfig",
                                     ['abiquo-ontap', "on"],
                                     stdout="/dev/tty5", stderr="/dev/tty5",

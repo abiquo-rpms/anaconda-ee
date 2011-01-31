@@ -1,6 +1,6 @@
 Name: anaconda-ee
 Version: 11.1.2.195
-Release: 170.20.abiquo
+Release: 170.21.abiquo
 License: GPL
 Summary: Graphical system installer
 Group: Applications/System
@@ -150,6 +150,9 @@ fi
 /sbin/chkconfig --del reconfig >/dev/null 2>&1 || :
 
 %changelog
+* Mon Jan 31 2011 Sergio Rubio <srubio@abiquo.com> - 11.1.2.195-170.21.abiquo
+- fixed ontap profile post-install actions
+
 * Mon Jan 31 2011 Sergio Rubio <srubio@abiquo.com> - 11.1.2.195-170.20.abiquo
 - added redis migration code
 

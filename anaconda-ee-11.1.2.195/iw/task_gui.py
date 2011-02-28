@@ -57,7 +57,7 @@ class TaskWindow(InstallWindow):
             log.info("cloud-in-a-box selected, skip.")
             self.dispatch.skipStep("abiquo", skip = 1)
             self.dispatch.skipStep("abiquo_ontap", skip = 1)
-            self.dispatch.skipStep("abiquo_rs", skip = 1)
+            #self.dispatch.skipStep("abiquo_rs", skip = 1)
         
         if not ('abiquo-v2v' in selected_groups):
             self.dispatch.skipStep("abiquo_v2v", skip = 1)
@@ -192,7 +192,7 @@ class TaskWindow(InstallWindow):
                 raise gui.StayOnScreen
 
         if 'cloud-in-a-box' in selected_groups:
-            self.dispatch.skipStep("abiquo_rs", skip = 1)
+            #self.dispatch.skipStep("abiquo_rs", skip = 1)
             self.dispatch.skipStep("abiquo_hv", skip = 1)
         
         if ('abiquo-remote-services' in selected_groups) and \
@@ -203,6 +203,20 @@ class TaskWindow(InstallWindow):
 
         if ('abiquo-nfs-repository' in selected_groups):
             self.dispatch.skipStep("abiquo_v2v", skip = 1)
+
+        if not ('abiquo-dhcp-relay' in selected_groups):
+            self.dispatch.skipStep("abiquo_dhcp_relay", skip = 1)
+        else:
+            self.dispatch.skipStep("abiquo_dhcp_relay", skip = 0)
+        
+        if ('abiquo-dhcp-relay' in selected_groups) and \
+                (('cloud-in-a-box' or 'abiquo-remote-services') in selected_groups):
+                    self.intf.messageWindow(_("<b>Warning</b>"),
+                            _("<b>Overlapping tasks selected</b>\n\n"
+                             "You have selected <i>Abiquo DHCP Relay</i> install. "
+                             "Selection Remote Services or Cloud-in-a-Box is not permitted."),
+                            type="warning")
+                    raise gui.StayOnScreen
 
 
 

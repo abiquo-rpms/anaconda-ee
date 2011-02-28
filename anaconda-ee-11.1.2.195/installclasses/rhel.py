@@ -8,6 +8,7 @@ import iutil
 import types
 import re
 import shutil
+from abiquo_postinstall_175 import *
 
 try:
     import instnum
@@ -30,6 +31,7 @@ class InstallClass(BaseInstallClass):
 <b>Remote Services:</b> Installs the components required to manage a remote datacenter from Abiquo (V2V is also needed, but can be installed on its own server).
 <b>V2V Conversion Services:</b> Conversion services required for the Abiquo V2V features. Can be installed standalone (for best performance) or with the Remote Services.
 <b>Abiquo NFS Repository:</b> Local repository to store the virtual appliances.
+<b>Abiquo DHCP Relay:</b> DHCP Relay used to scale Abiquo multi-rack installations.
 
 <b>Abiquo KVM Cloud Node:</b> Installs a KVM Cloud Node.
 <b>Abiquo Xen Cloud Node:</b> Installs a Xen Cloud Node.
@@ -56,6 +58,7 @@ class InstallClass(BaseInstallClass):
               (N_("Abiquo KVM"), ["abiquo-kvm"]),
               (N_("Abiquo Xen"), ["abiquo-xen"]),
               (N_("Abiquo VirtualBox"), ["abiquo-virtualbox"]),
+              (N_("Abiquo DHCP Relay"), ["abiquo-dhcp-relay"]),
               (N_("Abiquo Remote Repository"), ["abiquo-remote-repository"])
               ]
 
@@ -84,197 +87,7 @@ class InstallClass(BaseInstallClass):
 	dispatch.skipStep("regkey", skip = 1)        
 
     def postAction(self, anaconda, serial):
-        f = open(anaconda.rootPath + "/etc/motd", "w")
-
-        f.write("""
-
-                  Mb            
-                  Mb            
-                  Mb            H@
-      ..J++...J,  Mb ..JJJ..    .,    .......    ..,      ...   ...+JJ.
-    .dMY=!?7HNMP`.MNMB"??7TMm. .Mb  .JrC???7wo,  ,Hr      dM. .JM9=!?7WN,
-   JHD`      ?#P .M#:      .HN..Hb .wZ!     .zw!`,Hr      dM`.d#!     ``Mr
-   MN:        MP` MP`      `J#\.Hb ?O:       .rc ,Hr      dM`,HF        W#
-   dMp       .HP` MN,      .dM`.Hb `OO.     .J?:`,Mb     .dM`.MN.      .Mt
-    ?MNJ....gMMP .MMNa.....HB! .Hb  `zro...J?WN&. 7Mm....dM%` .WNa....+M=
-      `7TYY"^ "^  "^ ?TYYY=`    7=   ` ????!``?TY   ?TYY"^`     .?TY9"=`
-   
-   
-
-   Abiquo Release 1.7.0
-
-""")
-        f.close()
-
-        if (anaconda.backend.isGroupSelected('abiquo-kvm') or \
-                anaconda.backend.isGroupSelected('abiquo-xen') or \
-                anaconda.backend.isGroupSelected('abiquo-v2v') or \
-                anaconda.backend.isGroupSelected('abiquo-remote-services')) and \
-                not anaconda.backend.isGroupSelected('abiquo-nfs-repository'):
-                    f = open(anaconda.rootPath + "/etc/fstab", "a")
-                    f.write("%s /opt/vm_repository  nfs defaults    0 0\n" %
-                                anaconda.id.abiquo_rs.abiquo_nfs_repository )
-                    f.close()
-        
-        if anaconda.backend.isGroupSelected('cloud-in-a-box'):
-            f = open(anaconda.rootPath + "/opt/abiquo/config/abiquo.properties", "a")
-            f.write("abiquo.virtualfactory.kvm.fullVirt = false\n")
-            f.close()
-
-        if anaconda.backend.isGroupSelected('abiquo-nfs-repository'):
-            f = open(anaconda.rootPath + "/etc/exports", "a")
-            f.write("/opt/vm_repository    *(rw,no_root_squash,subtree_check,insecure)\n")
-            f.close()
-            iutil.execWithRedirect("/sbin/chkconfig",
-                                    ['nfs', "on"],
-                                    stdout="/dev/tty5", stderr="/dev/tty5",
-                                    root=anaconda.rootPath)
-
-        if anaconda.backend.isGroupSelected('abiquo-remote-services'):
-            iutil.execWithRedirect("/sbin/chkconfig",
-                                    ['dhcpd', "on"],
-                                    stdout="/dev/tty5", stderr="/dev/tty5",
-                                    root=anaconda.rootPath)
-
-        if anaconda.backend.isGroupSelected('abiquo-server') or \
-                anaconda.backend.isGroupSelected('cloud-in-a-box'):
-                    iutil.execWithRedirect("/sbin/chkconfig",
-                                            ['rabbitmq-server', "on"],
-                                            stdout="/dev/tty5", stderr="/dev/tty5",
-                                            root=anaconda.rootPath)
-
-        iutil.execWithRedirect("/sbin/chkconfig",
-                                ['mysqld', "on"],
-                                stdout="/dev/tty5", stderr="/dev/tty5",
-                                root=anaconda.rootPath)
-        if anaconda.backend.isGroupSelected('cloud-in-a-box') or \
-                anaconda.backend.isGroupSelected('abiquo-lvm-storage-server'):
-                    iutil.execWithRedirect("/sbin/chkconfig",
-                                ['tgtd', "on"],
-                                stdout="/dev/tty5", stderr="/dev/tty5",
-                                root=anaconda.rootPath)
-
-        if anaconda.backend.isGroupSelected('abiquo-lvm-storage-server'):
-            iutil.execWithRedirect("/sbin/chkconfig",
-                                    ['abiquo-lvmiscsi', "on"],
-                                    stdout="/dev/tty5", stderr="/dev/tty5",
-                                    root=anaconda.rootPath)
-
-        if anaconda.backend.isGroupSelected('abiquo-ontap'):
-            log.info('Updating abiquo-ontap configuration...')
-            ontap_cfg = anaconda.rootPath + '/opt/abiquo/ontap/tomcat/webapps/ROOT/WEB-INF/classes/config.xml'
-            shutil.copy(anaconda.rootPath + '/usr/share/doc/abiquo-ontap/examples/config.xml',
-                        '%s' % (ontap_cfg,))
-            os.system('sed -i s/@@HOST@@/%s/ %s' % \
-                    (anaconda.id.abiquo_rs.ontap_server_ip,ontap_cfg))
-            os.system('sed -i s/@@USER@@/%s/ %s' % \
-                    (anaconda.id.abiquo_rs.ontap_user, ontap_cfg))
-            os.system('sed -i s/@@PASSWORD@@/%s/ %s' % \
-                    (anaconda.id.abiquo_rs.ontap_password, ontap_cfg))
-
-            log.info('Enabling abiquo-ontap service')
-            iutil.execWithRedirect("/sbin/chkconfig",
-                                    ['abiquo-ontap', "on"],
-                                    stdout="/dev/tty5", stderr="/dev/tty5",
-                                    root=anaconda.rootPath)
-
-        if anaconda.backend.isGroupSelected('abiquo-remote-services'):
-            iutil.execWithRedirect("/sbin/chkconfig",
-                                    ['redis', "on"],
-                                    stdout="/dev/tty5", stderr="/dev/tty5",
-                                    root=anaconda.rootPath)
-        if anaconda.backend.isGroupSelected('cloud-in-a-box'):
-            iutil.execWithRedirect("/sbin/chkconfig",
-                                    ['nfs', "on"],
-                                    stdout="/dev/tty5", stderr="/dev/tty5",
-                                    root=anaconda.rootPath)
-            iutil.execWithRedirect("/sbin/chkconfig",
-                                    ['iptables', "on"],
-                                    stdout="/dev/tty5", stderr="/dev/tty5",
-                                    root=anaconda.rootPath)
-            iutil.execWithRedirect("/sbin/chkconfig",
-                                    ['dhcpd', "on"],
-                                    stdout="/dev/tty5", stderr="/dev/tty5",
-                                    root=anaconda.rootPath)
-            iutil.execWithRedirect("/sbin/chkconfig",
-                                    ['smb', "on"],
-                                    stdout="/dev/tty5", stderr="/dev/tty5",
-                                    root=anaconda.rootPath)
-            iutil.execWithRedirect("/sbin/chkconfig",
-                                    ['redis', "on"],
-                                    stdout="/dev/tty5", stderr="/dev/tty5",
-                                    root=anaconda.rootPath)
-            open(anaconda.rootPath + '/opt/vm_repository/.abiquo_repository', 'w').close()
-        if anaconda.backend.isGroupSelected('abiquo-kvm') or \
-            anaconda.backend.isGroupSelected('cloud-in-a-box') or \
-            anaconda.backend.isGroupSelected('abiquo-virtualbox'):
-                iutil.execWithRedirect("/sbin/chkconfig",
-                                    ['avahi-daemon', "off"],
-                                    stdout="/dev/tty5", stderr="/dev/tty5",
-                                    root=anaconda.rootPath)
-                f = open(anaconda.rootPath + "/etc/abiquo-aim.ini", "w")
-                f.write("""
-# AIM configuration file
-
-[server]
-port = 8889
-
-[monitor]
-uri = "qemu+unix:///system"
-redisHost = %s
-redisPort = 6379
-
-[rimp]
-repository = /opt/vm_repository
-datastore = /var/lib/virt
-
-[vlan]
-ifconfigCmd = /sbin/ifconfig
-vconfigCmd = /sbin/vconfig
-brctlCmd = /usr/sbin/brctl
-""" % anaconda.id.abiquo.abiquo_rs_ip)
-                f.close()
-        
-        if anaconda.backend.isGroupSelected('abiquo-xen'):
-            # replace default kernel entry
-            f = open(anaconda.rootPath + '/boot/grub/menu.lst')
-            buf = f.readlines()
-            f.close()
-            fw = open(anaconda.rootPath + '/boot/grub/menu.lst', 'w')
-            for line in buf:
-                fw.write(re.sub('\/xen.gz-2.6.18.*',
-                                '/xen.gz-3.4.2',
-                                line))
-            fw.close()
-
-            f = open(anaconda.rootPath + "/etc/abiquo-aim.ini", "w")
-            f.write("""
-# AIM configuration file
-
-[server]
-port = 8889
-
-[monitor]
-uri = "xen+unix:///"
-redisHost = %s
-redisPort = 6379
-
-[rimp]
-repository = /opt/vm_repository
-datastore = /var/lib/virt
-
-[vlan]
-ifconfigCmd = /sbin/ifconfig
-vconfigCmd = /sbin/vconfig
-brctlCmd = /usr/sbin/brctl
-""" % anaconda.id.abiquo.abiquo_rs_ip)
-            f.close()
-        f = open(anaconda.rootPath + '/etc/abiquo-installer', 'a')
-        f.write('Installed Profiles: %s\n' %
-                str(anaconda.id.abiquo.selectedGroups))
-        f.close()
-
-
+        abiquoPostInstall(anaconda)
 
     def handleRegKey(self, key, intf, interactive = True):
         self.repopaths = { "base": "%s" %(productPath,) }

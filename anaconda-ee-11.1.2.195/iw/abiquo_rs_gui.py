@@ -15,6 +15,8 @@ import gui
 from iw_gui import *
 from rhpl.translate import _, N_
 from constants import productName
+import re
+import socket
 
 from netconfig_dialog import NetworkConfigurator
 import network
@@ -27,10 +29,45 @@ log = logging.getLogger("anaconda")
 
 class AbiquoRSWindow(InstallWindow):
     def getNext(self):
-        self.data.abiquo_rs.abiquo_nfs_repository = \
-                self.xml.get_widget('abiquo_nfs_repository').get_text()
-        self.data.abiquo_rs.abiquo_rabbitmq_host = \
-                self.xml.get_widget('abiquo_server_ip').get_text()
+        nfsUrl = self.xml.get_widget('abiquo_nfs_repository').get_text()
+        if re.search('(localhost|127\.0\.0\.1)', nfsUrl):
+            self.intf.messageWindow(_("<b>NFS Repository Error</b>"),
+                       _("<b>127.0.0.1 or localhost detected</b>\n\n"
+                         "127.0.0.1 or localhost values are not allowed here. "
+                         "Use an IP address reachable by other hosts "
+                         "in your LAN."),
+                            type="warning")
+            raise gui.StayOnScreen
+
+        serverIP = self.xml.get_widget('abiquo_server_ip').get_text()
+        if re.search('(localhost|127\.0\.0\.1)', serverIP):
+            self.intf.messageWindow(_("<b>Abiquo Server IP Error</b>"),
+                       _("<b>127.0.0.1 or localhost detected</b>\n\n"
+                         "127.0.0.1 or localhost values are not allowed here. "
+                         "Use an IP address reachable by other hosts "
+                         "in your LAN."),
+                                type="warning")
+            raise gui.StayOnScreen
+
+        try:
+            socket.inet_aton(serverIP.strip())
+        except socket.error:
+            self.intf.messageWindow(_("<b>Abiquo Server IP Error</b>"),
+                       _("<b>Invalid IP Address</b>\n\n"
+                         "%s is not a valid IP Address" % serverIP),
+                                type="warning")
+            raise gui.StayOnScreen
+
+        if not re.search('.+:\/.*', nfsUrl):
+            self.intf.messageWindow(_("<b>NFS Repository Error</b>"),
+                       _("<b>Invalid NFS URL</b>\n\n"
+                         "%s is not a valid NFS URL" % nfsUrl),
+                                type="warning")
+            raise gui.StayOnScreen
+
+
+        self.data.abiquo_rs.abiquo_nfs_repository = nfsUrl
+        self.data.abiquo_rs.abiquo_rabbitmq_host = serverIP
 
     def getScreen (self, anaconda):
         self.intf = anaconda.intf

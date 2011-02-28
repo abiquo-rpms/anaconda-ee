@@ -89,6 +89,13 @@ class Abiquo:
         self.abiquo_database_host = '127.0.0.1'
         self.abiquo_database_user = 'root'
         self.abiquo_database_password = ''
+        self.abiquo_dhcprelay_vrange_1 = 1
+        self.abiquo_dhcprelay_vrange_2 = 100
+        self.abiquo_dhcprelay_management_if = 'eth0'
+        self.abiquo_dhcprelay_service_if = 'eth0'
+        self.abiquo_dhcprelay_relay_ip = ''
+        self.abiquo_dhcprelay_dhcpd_ip = ''
+        self.abiquo_dhcprelay_service_network = '10.0.0.0'
 
 
 

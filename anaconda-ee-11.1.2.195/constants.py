@@ -58,6 +58,8 @@ from pykickstart.constants import *
 # or decrease over time
 NUMBER_OF_CDS = 6
 
+# ABIQUO ANACONDA RELEASE
+ABI_ANACONDA_RELEASE = '20110223'
 
 # common string needs to be easy to change
 import product

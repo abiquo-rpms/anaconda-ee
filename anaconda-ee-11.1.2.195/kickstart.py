@@ -107,7 +107,7 @@ class AnacondaKSHandlers(KickstartHandlers):
 
         self.lineno = 0
         self.currentCmd = ""
-        self.skipSteps.extend(["abiquo", "abiquo_rs", "abiquo_hv", "abiquo_ontap"])
+        self.skipSteps.extend(["abiquo", "abiquo_rs", "abiquo_hv", "abiquo_ontap", "abiquo_dhcp_relay"])
 
     def doAuthconfig(self, args):
         KickstartHandlers.doAuthconfig(self, args)

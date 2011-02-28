@@ -81,6 +81,7 @@ stepToClass = {
     "abiquo_v2v": ("abiquo_v2v_gui", "AbiquoV2VWindow"),    
     "abiquo_hv": ("abiquo_hv_gui", "AbiquoHVWindow"),    
     "abiquo_ontap": ("abiquo_ontap_gui", "AbiquoOntapWindow"),    
+    "abiquo_dhcp_relay": ("abiquo_dhcp_relay_gui", "AbiquoDHCPRelayWindow"),    
     "complete" : ("congrats_gui", "CongratulationWindow"),
 }
 

@@ -95,6 +95,7 @@ installSteps = [
     ("abiquo_v2v", ), 
     ("abiquo_hv", ), 
     ("abiquo_ontap", ), 
+    ("abiquo_dhcp_relay", ), 
     ("postselection", doPostSelection, ),
     ("confirminstall", ),
     ("confirmupgrade", ),

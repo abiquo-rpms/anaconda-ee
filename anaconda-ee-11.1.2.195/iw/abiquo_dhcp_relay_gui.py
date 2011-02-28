@@ -36,15 +36,23 @@ class AbiquoDHCPRelayWindow(InstallWindow):
                                 type="warning")
             raise gui.StayOnScreen
             
-        
         combo = self.xml.get_widget('management_if')
         iter = combo.get_active_iter()
+        if not iter:
+            self.intf.messageWindow(_("<b>Invalid Interface</b>"),
+                       "Invalid management interface selected",
+                                type="warning")
+            raise gui.StayOnScreen
         self.data.abiquo.abiquo_dhcprelay_management_if = combo.get_model().get_value(iter, 0)
-        
+
         combo = self.xml.get_widget('service_if')
         iter = combo.get_active_iter()
+        if not iter:
+            self.intf.messageWindow(_("<b>Invalid Interface</b>"),
+                       "Invalid relay interface selected",
+                                type="warning")
+            raise gui.StayOnScreen
         self.data.abiquo.abiquo_dhcprelay_service_if = combo.get_model().get_value(iter, 0)
-        
 
         # Get RELAY Server IP
         self.data.abiquo.abiquo_dhcprelay_relay_ip = self.xml.get_widget('relay_ip').get_text()

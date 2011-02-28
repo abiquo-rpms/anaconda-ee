@@ -24,23 +24,23 @@ class InstallClass(BaseInstallClass):
     id = "rhel"
     name = N_("Abiquo Linux")
     _description = N_("""
-<b>Select one (or multiple) %s components to install</b>
+<b>Select one (or multiple) %s components to install:</b>""")
 
-<b>Cloud in a Box:</b> Abiquo + Storage + Hypervisor in one box.
-<b>Server:</b> Installs Abiquo core, the API, MySQL and the web client.
-<b>Remote Services:</b> Installs the components required to manage a remote datacenter from Abiquo (V2V is also needed, but can be installed on its own server).
-<b>V2V Conversion Services:</b> Conversion services required for the Abiquo V2V features. Can be installed standalone (for best performance) or with the Remote Services.
-<b>Abiquo NFS Repository:</b> Local repository to store the virtual appliances.
-<b>Abiquo DHCP Relay:</b> DHCP Relay used to scale Abiquo multi-rack installations.
-
-<b>Abiquo KVM Cloud Node:</b> Installs a KVM Cloud Node.
-<b>Abiquo Xen Cloud Node:</b> Installs a Xen Cloud Node.
-<b>Abiquo VirtualBox Cloud Node:</b> Installs a VirtualBox 4.0 Cloud Node.
-
-<b>LVM Storage Server:</b> Abiquo LVM based iSCSI storage server.
-<b>NetApp Storage Connector:</b> NetApp connector to manage NetApp Storage Servers.
-<b>Remote Repository:</b> Abiquo Remote Repository.
-                     """)
+#<b>Cloud in a Box:</b> Abiquo + Storage + Hypervisor in one box.
+#<b>Server:</b> Installs Abiquo core, the API, MySQL and the web client.
+#<b>Remote Services:</b> Installs the components required to manage a remote datacenter from Abiquo (V2V is also needed, but can be installed on its own server).
+#<b>V2V Conversion Services:</b> Conversion services required for the Abiquo V2V features. Can be installed standalone (for best performance) or with the Remote Services.
+#<b>Abiquo NFS Repository:</b> Local repository to store the virtual appliances.
+#<b>Abiquo DHCP Relay:</b> DHCP Relay used to scale Abiquo multi-rack installations.
+#
+#<b>Abiquo KVM Cloud Node:</b> Installs a KVM Cloud Node.
+#<b>Abiquo Xen Cloud Node:</b> Installs a Xen Cloud Node.
+#<b>Abiquo VirtualBox Cloud Node:</b> Installs a VirtualBox 4.0 Cloud Node.
+#
+#<b>LVM Storage Server:</b> Abiquo LVM based iSCSI storage server.
+#<b>NetApp Storage Connector:</b> NetApp connector to manage NetApp Storage Servers.
+#<b>Remote Repository:</b> Abiquo Remote Repository.
+#                     """)
     _descriptionFields = (productName,)
     sortPriority = 10000
     allowExtraRepos = False

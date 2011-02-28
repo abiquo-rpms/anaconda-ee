@@ -265,7 +265,7 @@ eth2</property>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">False</property>
-                    <property name="padding">33</property>
+                    <property name="padding">34</property>
                     <property name="position">1</property>
                   </packing>
                 </child>
@@ -316,7 +316,7 @@ eth2</property>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">False</property>
-                    <property name="padding">47</property>
+                    <property name="padding">49</property>
                     <property name="position">1</property>
                   </packing>
                 </child>

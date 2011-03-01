@@ -85,6 +85,10 @@ Abiquo Release 1.7.0
                                 ['nfs', "on"],
                                 stdout="/dev/tty5", stderr="/dev/tty5",
                                 root=anaconda.rootPath)
+        if not os.path.exists(anaconda.rootPath + '/opt/vm_repository'):
+            os.makedirs(anaconda.rootPath + '/opt/vm_repository')
+        if not os.path.exists(anaconda.rootPath + '/opt/vm_repository/.abiquo_repository'):
+            open(anaconda.rootPath + '/opt/vm_repository/.abiquo_repository', 'w').close()
 
     if anaconda.backend.isGroupSelected('abiquo-remote-services'):
         iutil.execWithRedirect("/sbin/chkconfig",
@@ -243,7 +247,7 @@ brctlCmd = /usr/sbin/brctl
     f.write('Installed Profiles: %s\n' %
             str(anaconda.id.abiquo.selectedGroups))
     f.close()
-
-
-
-
+    
+    if anaconda.backend.isGroupSelected('abiquo-virtualbox') and \
+            os.path.exists('/etc/sysconfig/modules/kvm.modules'):
+                os.remove('/etc/sysconfig/modules/kvm.modules')

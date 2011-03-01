@@ -249,5 +249,5 @@ brctlCmd = /usr/sbin/brctl
     f.close()
     
     if anaconda.backend.isGroupSelected('abiquo-virtualbox') and \
-            os.path.exists('/etc/sysconfig/modules/kvm.modules'):
-                os.remove('/etc/sysconfig/modules/kvm.modules')
+            os.path.exists(anaconda.rootPath + '/etc/sysconfig/modules/kvm.modules'):
+                os.remove(anaconda.rootPath + '/etc/sysconfig/modules/kvm.modules')

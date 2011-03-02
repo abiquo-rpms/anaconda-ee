@@ -151,7 +151,6 @@ class BaseInstallClass:
 		 #"abiquo",
 		 "abiquo_rs",
 		 "abiquo_hv",
-		 "abiquo_ontap",
 		 "abiquo_dhcp_relay",
 		 "confirminstall",
 		 "install",

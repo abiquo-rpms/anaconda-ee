@@ -38,7 +38,6 @@ class InstallClass(BaseInstallClass):
 #<b>Abiquo VirtualBox Cloud Node:</b> Installs a VirtualBox 4.0 Cloud Node.
 #
 #<b>LVM Storage Server:</b> Abiquo LVM based iSCSI storage server.
-#<b>NetApp Storage Connector:</b> NetApp connector to manage NetApp Storage Servers.
 #<b>Remote Repository:</b> Abiquo Remote Repository.
 #                     """)
     _descriptionFields = (productName,)
@@ -50,7 +49,6 @@ class InstallClass(BaseInstallClass):
     tasks =  [
               (N_("Cloud in a Box"), ["cloud-in-a-box"]),
               (N_("LVM Storage Server"), ["abiquo-lvm-storage-server"]),
-              (N_("NetApp Storage Connector"), ["abiquo-ontap"]),
               (N_("Abiquo Server"), ["abiquo-server"]),
               (N_("Abiquo V2V Conversion Services"), ["abiquo-v2v"]),
               (N_("Abiquo Remote Services"), ["abiquo-remote-services"]),

@@ -122,6 +122,18 @@ Abiquo Release 1.7.0
                                         root=anaconda.rootPath)
                 schema.close()
 
+                # setup db credentials
+                iutil.execWithRedirect("/usr/bin/abicli",
+                                        ['set', 'database-password', ''],
+                                        stdout="/dev/tty5", stderr="/dev/tty5",
+                                        root=anaconda.rootPath)
+
+    # Tweak security limits.conf file
+    slimits = open(anaconda.rootPath + "/etc/security/limits.conf", 'a')
+    slimits.write("root soft nofile 4096\n")
+    slimits.write("root hard nofile 10240\n")
+    slimits.close()
+
 
     if anaconda.backend.isGroupSelected('cloud-in-a-box') or \
             anaconda.backend.isGroupSelected('abiquo-lvm-storage-server'):
@@ -133,24 +145,6 @@ Abiquo Release 1.7.0
                                         ['abiquo-lvmiscsi', "on"],
                                         stdout="/dev/tty5", stderr="/dev/tty5",
                                         root=anaconda.rootPath)
-
-    if anaconda.backend.isGroupSelected('abiquo-ontap'):
-        log.info('Updating abiquo-ontap configuration...')
-        ontap_cfg = anaconda.rootPath + '/opt/abiquo/ontap/tomcat/webapps/ROOT/WEB-INF/classes/config.xml'
-        shutil.copy(anaconda.rootPath + '/usr/share/doc/abiquo-ontap/examples/config.xml',
-                    '%s' % (ontap_cfg,))
-        os.system('sed -i s/@@HOST@@/%s/ %s' % \
-                (anaconda.id.abiquo_rs.ontap_server_ip,ontap_cfg))
-        os.system('sed -i s/@@USER@@/%s/ %s' % \
-                (anaconda.id.abiquo_rs.ontap_user, ontap_cfg))
-        os.system('sed -i s/@@PASSWORD@@/%s/ %s' % \
-                (anaconda.id.abiquo_rs.ontap_password, ontap_cfg))
-
-        log.info('Enabling abiquo-ontap service')
-        iutil.execWithRedirect("/sbin/chkconfig",
-                                ['abiquo-ontap', "on"],
-                                stdout="/dev/tty5", stderr="/dev/tty5",
-                                root=anaconda.rootPath)
 
     if anaconda.backend.isGroupSelected('abiquo-remote-services'):
         iutil.execWithRedirect("/sbin/chkconfig",

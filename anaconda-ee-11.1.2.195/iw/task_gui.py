@@ -56,23 +56,14 @@ class TaskWindow(InstallWindow):
         if 'cloud-in-a-box' in selected_groups:
             log.info("cloud-in-a-box selected, skip.")
             self.dispatch.skipStep("abiquo", skip = 1)
-            self.dispatch.skipStep("abiquo_ontap", skip = 1)
-            #self.dispatch.skipStep("abiquo_rs", skip = 1)
         
         if not ('abiquo-v2v' in selected_groups):
             self.dispatch.skipStep("abiquo_v2v", skip = 1)
         else:
             self.dispatch.skipStep("abiquo_v2v", skip = 0)
 
-        if 'abiquo-ontap' in selected_groups:
-            self.dispatch.skipStep("abiquo_ontap", skip = 0)
-        
         if 'abiquo-remote-services' in selected_groups:
             self.dispatch.skipStep("abiquo_rs", skip = 0)
-
-        if not ('abiquo-ontap' in selected_groups):
-            log.info("netapp connector not selected, skip.")
-            self.dispatch.skipStep("abiquo_ontap", skip = 1)
 
         if (not ('abiquo-server' in selected_groups)) and \
            (not ('cloud-in-a-box' in selected_groups)):

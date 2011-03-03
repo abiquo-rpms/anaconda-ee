@@ -60,7 +60,7 @@ Abiquo Release 1.7.0
         service_if = anaconda.id.abiquo.abiquo_dhcprelay_service_if
         dhcpd_ip = anaconda.id.abiquo.abiquo_dhcprelay_dhcpd_ip
         relay_net = anaconda.id.abiquo.abiquo_dhcprelay_service_network 
-        log.info("abiquo-dhcp-relay %s %s %s %s %s %s %s %s %s %s %s %s" % ('-r', mgm_if, '-s', service_if, '-v', "%s-%s" % (vrange1, vrange2), '-x', dhcpd_ip, '-n', relay_net))
+        log.info("abiquo-dhcp-relay %s %s %s %s %s %s %s %s %s %s" % ('-r', mgm_if, '-s', service_if, '-v', "%s-%s" % (vrange1, vrange2), '-x', dhcpd_ip, '-n', relay_net))
         iutil.execWithRedirect("/usr/bin/abiquo-dhcp-relay",
                             ['-r', mgm_if, '-s', service_if, '-v', "%s-%s" % (vrange1, vrange2), '-x', dhcpd_ip, '-n', relay_net],
                             stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="//mnt/sysimage/var/log/abiquo-postinst.log",

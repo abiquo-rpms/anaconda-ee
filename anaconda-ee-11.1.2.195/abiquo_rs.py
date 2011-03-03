@@ -61,6 +61,10 @@ class AbiquoRS:
                     self.abiquo_redis_port)
             f.write("abiquo.redis.host = %s\n" %
                     self.abiquo_redis_host)
+            f.write("abiquo.storagemanager.netapp.user = %s\n" %
+                    "root")
+            f.write("abiquo.storagemanager.netapp.password= %s\n" %
+                    "temporal")
             f.close()
 
     def writeKS(self, f):

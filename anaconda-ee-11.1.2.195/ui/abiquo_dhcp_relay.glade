@@ -70,9 +70,6 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="active">1</property>
-                    <property name="items">eth0
-eth1
-eth2</property>
                   </widget>
                   <packing>
                     <property name="expand">True</property>
@@ -122,9 +119,6 @@ eth2</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="active">1</property>
-                    <property name="items">eth0
-eth1
-eth2</property>
                   </widget>
                   <packing>
                     <property name="expand">True</property>
@@ -190,56 +184,6 @@ eth2</property>
               </packing>
             </child>
             <child>
-              <widget class="GtkHBox" id="hbox4">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <child>
-                  <widget class="GtkLabel" id="label6">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="xalign">0</property>
-                    <property name="label" translatable="yes">&lt;b&gt;Relay Server IP:&lt;/b&gt;</property>
-                    <property name="use_markup">True</property>
-                  </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <widget class="GtkLabel" id="label7">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                  </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="padding">38</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <widget class="GtkEntry" id="relay_ip">
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="invisible_char">●</property>
-                    <property name="invisible_char_set">True</property>
-                  </widget>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">2</property>
-                  </packing>
-                </child>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">4</property>
-              </packing>
-            </child>
-            <child>
               <widget class="GtkHBox" id="hbox5">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
@@ -287,7 +231,7 @@ eth2</property>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
-                <property name="position">5</property>
+                <property name="position">4</property>
               </packing>
             </child>
             <child>
@@ -362,7 +306,7 @@ eth2</property>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
-                <property name="position">6</property>
+                <property name="position">5</property>
               </packing>
             </child>
           </widget>

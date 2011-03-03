@@ -54,17 +54,6 @@ class AbiquoDHCPRelayWindow(InstallWindow):
             raise gui.StayOnScreen
         self.data.abiquo.abiquo_dhcprelay_service_if = combo.get_model().get_value(iter, 0)
 
-        # Get RELAY Server IP
-        self.data.abiquo.abiquo_dhcprelay_relay_ip = self.xml.get_widget('relay_ip').get_text()
-        try:
-            socket.inet_aton(self.data.abiquo.abiquo_dhcprelay_relay_ip.strip())
-        except socket.error:
-            self.intf.messageWindow(_("<b>IP Error</b>"),
-                       _("<b>Invalid DHCP Relay IP Address</b>\n\n"
-                         "%s is not a valid IP Address" % self.data.abiquo.abiquo_dhcprelay_relay_ip),
-                                type="warning")
-            raise gui.StayOnScreen
-
         # DHCP Server IP
         self.data.abiquo.abiquo_dhcprelay_dhcpd_ip = self.xml.get_widget('dhcpd_ip').get_text()
         try:
@@ -80,12 +69,26 @@ class AbiquoDHCPRelayWindow(InstallWindow):
 
     def getScreen (self, anaconda):
         self.intf = anaconda.intf
-        #self.dispatch = anaconda.dispatch
-        #self.backend = anaconda.backend
         self.anaconda = anaconda
         self.data = anaconda.id
 
         (self.xml, vbox) = gui.getGladeWidget("abiquo_dhcp_relay.glade", "settingsBox")
-        #self.xml.get_widget('abiquo_nfs_repository').set_text(self.data.abiquo_rs.abiquo_nfs_repository)
-        #self.xml.get_widget('abiquo_rs_ip').set_text(self.data.abiquo.abiquo_rs_ip)
+        service_if_combo = self.xml.get_widget('service_if')
+        management_if_combo = self.xml.get_widget('management_if')
+        netinfo = network.Network()
+        management_if_store = gtk.ListStore(gobject.TYPE_STRING)
+        service_if_store = gtk.ListStore(gobject.TYPE_STRING)
+        for dev in netinfo.available().keys():
+            service_if_store.append([dev])
+            management_if_store.append([dev])
+            
+        service_if_combo.set_model(service_if_store)
+        cell = gtk.CellRendererText()
+        service_if_combo.pack_start(cell, True)
+        service_if_combo.add_attribute(cell, 'text',0)
+        management_if_combo.set_model(management_if_store)
+        cell = gtk.CellRendererText()
+        management_if_combo.pack_start(cell, True)
+        management_if_combo.add_attribute(cell, 'text',0)
+
         return vbox

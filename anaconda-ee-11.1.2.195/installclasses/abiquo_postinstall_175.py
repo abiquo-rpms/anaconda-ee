@@ -58,19 +58,14 @@ Abiquo Release 1.7.0
         vrange2 = anaconda.id.abiquo.abiquo_dhcprelay_vrange_2
         mgm_if = anaconda.id.abiquo.abiquo_dhcprelay_management_if
         service_if = anaconda.id.abiquo.abiquo_dhcprelay_service_if
-        relay_ip = anaconda.id.abiquo.abiquo_dhcprelay_relay_ip
         dhcpd_ip = anaconda.id.abiquo.abiquo_dhcprelay_dhcpd_ip
         relay_net = anaconda.id.abiquo.abiquo_dhcprelay_service_network 
-        log.info("abiquo-dhcp-relay %s %s %s %s %s %s %s %s %s %s %s %s" % ('-r', mgm_if, '-i', relay_ip, '-s', service_if, '-v', "%s-%s" % (vrange1, vrange2), '-x', dhcpd_ip, '-n', relay_net))
+        log.info("abiquo-dhcp-relay %s %s %s %s %s %s %s %s %s %s %s %s" % ('-r', mgm_if, '-s', service_if, '-v', "%s-%s" % (vrange1, vrange2), '-x', dhcpd_ip, '-n', relay_net))
         iutil.execWithRedirect("/usr/bin/abiquo-dhcp-relay",
-                            ['-r', mgm_if, '-i', relay_ip, '-s', service_if, '-v', "%s-%s" % (vrange1, vrange2), '-x', dhcpd_ip, '-n', relay_net],
+                            ['-r', mgm_if, '-s', service_if, '-v', "%s-%s" % (vrange1, vrange2), '-x', dhcpd_ip, '-n', relay_net],
                             stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="//mnt/sysimage/var/log/abiquo-postinst.log",
                             root=anaconda.rootPath)
         shutil.move(anaconda.rootPath + '/relay-config', anaconda.rootPath + '/etc/init.d/relay-config')
-        for filename in glob.glob(anaconda.rootPath + '/route-*'):
-            os.remove(filename)
-        os.remove(anaconda.rootPath + '/dhcpd.conf')
-
         iutil.execWithRedirect("/sbin/chkconfig",
                                 ['relay-config', "on"],
                                 stdout="/dev/tty5", stderr="/dev/tty5",

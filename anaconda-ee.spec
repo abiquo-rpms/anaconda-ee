@@ -1,6 +1,6 @@
 Name: anaconda-ee
 Version: 11.1.2.195
-Release: 170.24.abiquo
+Release: 170.25.abiquo
 License: GPL
 Summary: Graphical system installer
 Group: Applications/System
@@ -150,6 +150,9 @@ fi
 /sbin/chkconfig --del reconfig >/dev/null 2>&1 || :
 
 %changelog
+* Fri Mar 04 2011 Sergio Rubio <srubio@abiquo.com> - 11.1.2.195-170.25.abiquo
+- task selector fixes
+
 * Fri Mar 04 2011 Sergio Rubio <srubio@abiquo.com> - 11.1.2.195-170.24.abiquo
 - updated release string in /etc/motd
 

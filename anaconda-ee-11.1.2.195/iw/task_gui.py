@@ -185,14 +185,13 @@ class TaskWindow(InstallWindow):
         if 'cloud-in-a-box' in selected_groups:
             #self.dispatch.skipStep("abiquo_rs", skip = 1)
             self.dispatch.skipStep("abiquo_hv", skip = 1)
+            self.dispatch.skipStep("abiquo_v2v", skip = 1)
         
         if ('abiquo-remote-services' in selected_groups) and \
                 ('abiquo-server' in selected_groups) and \
                 ('abiquo-v2v' in selected_groups):
-            self.dispatch.skipStep("abiquo_rs", skip = 1)
+            self.dispatch.skipStep("abiquo_rs", skip = 0)
             self.dispatch.skipStep("abiquo_hv", skip = 1)
-
-        if ('abiquo-nfs-repository' in selected_groups):
             self.dispatch.skipStep("abiquo_v2v", skip = 1)
 
         if not ('abiquo-dhcp-relay' in selected_groups):

@@ -15,6 +15,7 @@ import shutil
 import iutil
 import os
 from flags import flags
+import re
 
 import logging
 log = logging.getLogger("anaconda")
@@ -45,8 +46,6 @@ class AbiquoRS:
                     self.abiquo_appliancemanager_localRepositoryPath)
             f.write("abiquo.appliancemanager.repositoryLocation = %s\n" %
                     self.abiquo_nfs_repository)
-            f.write("abiquo.virtualfactory.hyperv.repositoryLocation = %s\n" %
-                    self.abiquo_virtualfactory_hyperv_repositoryLocation)
             f.write("abiquo.virtualfactory.xenserver.repositoryLocation = %s\n" %
                     self.abiquo_nfs_repository)
             f.write("abiquo.virtualfactory.vmware.repositoryLocation = %s\n" %
@@ -65,6 +64,11 @@ class AbiquoRS:
                     "root")
             f.write("abiquo.storagemanager.netapp.password= %s\n" %
                     "temporal")
+            # CIFS repo is special...
+            cifs_host = re.search("(\d{1,3}\.){3}\d{1,3}", self.abiquo_nfs_repository)
+            if cifs_host:
+                f.write("abiquo.virtualfactory.hyperv.repositoryLocation = //%s/vm_repository\n" %
+                        cifs_host.group(0))
             f.close()
 
     def writeKS(self, f):

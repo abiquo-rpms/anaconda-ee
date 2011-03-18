@@ -26,7 +26,7 @@ dMp       .HP` MN,      .dM`.Hb `OO.     .J?:`,Mb     .dM`.MN.      .Mt
 
 
 
-Abiquo Release 1.7.5 PREVIEW
+Abiquo Release 1.7.5-RC1
 
 """)
     f.close()

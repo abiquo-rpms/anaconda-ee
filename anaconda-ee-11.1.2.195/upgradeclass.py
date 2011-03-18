@@ -15,7 +15,7 @@ from rhpl.translate import N_, _
 import os
 import iutil
 import rhpl
-from abiquo_upgrade_post_17 import abiquo_upgrade_post
+from abiquo_upgrade_post_175 import abiquo_upgrade_post
 
 import logging
 log = logging.getLogger("anaconda")

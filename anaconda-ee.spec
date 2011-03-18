@@ -1,6 +1,6 @@
 Name: anaconda-ee
 Version: 11.1.2.195
-Release: 170.26.abiquo
+Release: 175.1.abiquo
 License: GPL
 Summary: Graphical system installer
 Group: Applications/System
@@ -150,6 +150,15 @@ fi
 /sbin/chkconfig --del reconfig >/dev/null 2>&1 || :
 
 %changelog
+* Tue Mar 18 2011 Sergio Rubio <srubio@abiquo.com> - 11.1.2.195-175.1.abiquo
+- version bump
+- upgrade scripts fixes
+
+* Tue Mar 17 2011 Sergio Rubio <srubio@abiquo.com> - 11.1.2.195-170.27.abiquo
+- selecting abiquo-kvm,virtualbox and xen is no longer permitted when selecting 
+  cloud-in-a-box
+- added pre/post upgrade scripts
+
 * Fri Mar 11 2011 Sergio Rubio <srubio@abiquo.com> - 11.1.2.195-170.26.abiquo
 - fix abiquo.virtualfactory.hyperv.repositoryLocation property
 

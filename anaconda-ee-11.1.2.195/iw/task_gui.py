@@ -89,6 +89,33 @@ class TaskWindow(InstallWindow):
             self.dispatch.skipStep("abiquo_hv", skip = 1)
 
         if ('cloud-in-a-box' in selected_groups):
+            if 'abiquo-kvm' in selected_groups:
+                self.intf.messageWindow(_("<b>Warning</b>"),
+                           _("<b>Overlapping tasks selected</b>\n\n"
+                             "You have selected Cloud in a Box install. "
+                             "Selecting Abiquo KVM is not permitted. Please, "
+                             "deselect Abiquo KVM and click next."),
+                                    type="warning")
+                raise gui.StayOnScreen
+            
+            if 'abiquo-virtualbox' in selected_groups:
+                self.intf.messageWindow(_("<b>Warning</b>"),
+                           _("<b>Overlapping tasks selected</b>\n\n"
+                             "You have selected Cloud in a Box install. "
+                             "Selecting Abiquo VirtualBox is not permitted. Please, "
+                             "deselect Abiquo VirtualBox and click next."),
+                                    type="warning")
+                raise gui.StayOnScreen
+            
+            if 'abiquo-xen' in selected_groups:
+                self.intf.messageWindow(_("<b>Warning</b>"),
+                           _("<b>Overlapping tasks selected</b>\n\n"
+                             "You have selected Cloud in a Box install. "
+                             "Selecting Abiquo Xen is not permitted. Please, "
+                             "deselect Abiquo Xen and click next."),
+                                    type="warning")
+                raise gui.StayOnScreen
+
             if 'abiquo-server' in selected_groups:
                 self.intf.messageWindow(_("<b>Warning</b>"),
                            _("<b>Overlapping tasks selected</b>\n\n"

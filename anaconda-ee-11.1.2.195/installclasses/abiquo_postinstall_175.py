@@ -39,6 +39,7 @@ Abiquo Release 1.7.5-RC1
 
     if (anaconda.backend.isGroupSelected('abiquo-kvm') or \
             anaconda.backend.isGroupSelected('abiquo-xen') or \
+            anaconda.backend.isGroupSelected('abiquo-virtualbox') or \
             anaconda.backend.isGroupSelected('abiquo-v2v') or \
             anaconda.backend.isGroupSelected('abiquo-remote-services')) and \
             not anaconda.backend.isGroupSelected('abiquo-nfs-repository'):

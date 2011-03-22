@@ -1,6 +1,6 @@
 Name: anaconda-ee
 Version: 11.1.2.195
-Release: 175.2.abiquo
+Release: 175.3.abiquo
 License: GPL
 Summary: Graphical system installer
 Group: Applications/System
@@ -150,6 +150,9 @@ fi
 /sbin/chkconfig --del reconfig >/dev/null 2>&1 || :
 
 %changelog
+* Tue Mar 22 2011 Sergio Rubio <srubio@abiquo.com> - 11.1.2.195-175.3.abiquo
+- bump release to RC2
+
 * Mon Mar 21 2011 Sergio Rubio <srubio@abiquo.com> - 11.1.2.195-175.2.abiquo
 - release bump
 - FIX: add vm_repository mount option to /etc/fstab

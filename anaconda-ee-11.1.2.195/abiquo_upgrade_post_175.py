@@ -22,7 +22,7 @@ def abiquo_upgrade_post(anaconda):
    
    
 
-   Abiquo Release 1.7.5-RC1
+   Abiquo Release 1.7.5-RC2
 
 """)
     f.close()

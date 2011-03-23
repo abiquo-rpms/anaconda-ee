@@ -1,6 +1,6 @@
 Name: anaconda-ee
 Version: 11.1.2.195
-Release: 175.3.abiquo
+Release: 175.4.abiquo
 License: GPL
 Summary: Graphical system installer
 Group: Applications/System
@@ -150,6 +150,10 @@ fi
 /sbin/chkconfig --del reconfig >/dev/null 2>&1 || :
 
 %changelog
+* Tue Mar 23 2011 Sergio Rubio <srubio@abiquo.com> - 11.1.2.195-175.4.abiquo
+- FIX: select database when upgrading the schema
+- bumped release to RC3
+
 * Tue Mar 22 2011 Sergio Rubio <srubio@abiquo.com> - 11.1.2.195-175.3.abiquo
 - bump release to RC2
 

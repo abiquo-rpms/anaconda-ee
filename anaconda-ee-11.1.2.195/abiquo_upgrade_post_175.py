@@ -22,12 +22,12 @@ def abiquo_upgrade_post(anaconda):
    
    
 
-   Abiquo Release 1.7.5-RC2
+   Abiquo Release 1.7.5-RC3
 
 """)
     f.close()
 
-    # create the schema
+    # apply the delta schema
     schema_path = anaconda.rootPath + "/usr/share/doc/abiquo-server/database/kinton-delta-1_7_0-to-1_7_5.sql"
     schema = open(schema_path)
 
@@ -45,7 +45,7 @@ def abiquo_upgrade_post(anaconda):
                                 root=anaconda.rootPath)
 
         iutil.execWithRedirect("/usr/bin/mysql",
-                                [],
+                                ['kinton'],
                                 stdin=schema,
                                 stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="//mnt/sysimage/var/log/abiquo-postinst.log",
                                 root=anaconda.rootPath)

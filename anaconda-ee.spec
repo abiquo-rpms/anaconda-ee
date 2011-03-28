@@ -1,6 +1,6 @@
 Name: anaconda-ee
 Version: 11.1.2.195
-Release: 175.5.abiquo
+Release: 175.6.abiquo
 License: GPL
 Summary: Graphical system installer
 Group: Applications/System
@@ -150,6 +150,9 @@ fi
 /sbin/chkconfig --del reconfig >/dev/null 2>&1 || :
 
 %changelog
+* Mon Mar 28 2011 Sergio Rubio <srubio@abiquo.com> - 11.1.2.195-175.6.abiquo
+- 1.7.5 GA release
+
 * Mon Mar 28 2011 Sergio Rubio <srubio@abiquo.com> - 11.1.2.195-175.5.abiquo
 - FIX: backup and restore /etc/fstab when upgrading
 

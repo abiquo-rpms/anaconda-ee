@@ -1,5 +1,6 @@
 import os
 import iutil
+import shutil
 import logging
 log = logging.getLogger("anaconda")
 
@@ -50,3 +51,10 @@ def abiquo_upgrade_post(anaconda):
                                 stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="//mnt/sysimage/var/log/abiquo-postinst.log",
                                 root=anaconda.rootPath)
         schema.close()
+
+    # restore fstab
+    backup_dir = anaconda.rootPath + '/opt/abiquo/backup/1.7.0'
+    if os.path.exists('%s/fstab.anaconda' % backup_dir):
+        shutil.copyfile("%s/fstab.anaconda" % backup_dir,
+                '%s/etc/fstab' % anaconda.rootPath)
+

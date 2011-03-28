@@ -32,6 +32,12 @@ def abiquo_upgrade_pre(anaconda):
             os.makedirs(old_configs_dir)
             for file in glob.glob(abiquo_config_dir + '/*.properties'):
                 shutil.copy(file, old_configs_dir)
+    
+    # backup fstab
+    if os.path.exists(anaconda.rootPath + '/etc/fstab'):
+        shutil.copyfile("%s/etc/fstab" % anaconda.rootPath,
+                '%s/fstab.anaconda' % backup_dir)
+
 
     # Backup kinton database
     if os.path.isdir(db_dir):

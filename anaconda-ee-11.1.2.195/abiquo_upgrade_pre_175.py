@@ -26,6 +26,9 @@ def abiquo_upgrade_pre(anaconda):
     redis_backup_dir = backup_dir + "/redis"
     abiquo_ontap_dir = anaconda.rootPath + '/opt/abiquo/ontap'
 
+    # create backup dir
+    os.makedirs(backup_dir)
+
     # Backup config files
     if os.path.exists(abiquo_config_dir):
         if not os.path.exists(old_configs_dir):

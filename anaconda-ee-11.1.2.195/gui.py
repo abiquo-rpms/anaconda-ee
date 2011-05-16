@@ -78,6 +78,7 @@ stepToClass = {
     "install" : ("progress_gui", "InstallProgressWindow"),
     #"abiquo": ("abiquo_gui", "AbiquoWindow"),    
     "abiquo_rs": ("abiquo_rs_gui", "AbiquoRSWindow"),    
+    "abiquo_distributed": ("abiquo_distributed_gui", "AbiquoDistributedWindow"),    
     "abiquo_v2v": ("abiquo_v2v_gui", "AbiquoV2VWindow"),    
     "abiquo_hv": ("abiquo_hv_gui", "AbiquoHVWindow"),    
     "abiquo_dhcp_relay": ("abiquo_dhcp_relay_gui", "AbiquoDHCPRelayWindow"),    

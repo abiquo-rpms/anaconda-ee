@@ -94,6 +94,7 @@ installSteps = [
     ("abiquo_rs", ), 
     ("abiquo_v2v", ), 
     ("abiquo_hv", ), 
+    ("abiquo_distributed", ), 
     ("abiquo_dhcp_relay", ), 
     ("postselection", doPostSelection, ),
     ("confirminstall", ),

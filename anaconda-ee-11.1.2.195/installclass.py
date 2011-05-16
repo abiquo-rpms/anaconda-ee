@@ -149,6 +149,7 @@ class BaseInstallClass:
 		 "tasksel",                                  
 		 "postselection",
 		 #"abiquo",
+		 "abiquo_distributed",
 		 "abiquo_rs",
 		 "abiquo_hv",
 		 "abiquo_dhcp_relay",

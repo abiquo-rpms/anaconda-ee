@@ -12,7 +12,6 @@ import gtk
 import gtk.glade
 import gobject
 import gui
-import abiquo_groups
 from iw_gui import *
 from rhpl.translate import _, N_
 from constants import productName
@@ -26,22 +25,147 @@ import yum.Errors
 import logging
 log = logging.getLogger("anaconda")
 
+class AbiquoAdditionalTasks(gtk.TreeView):
+    def __init__(self):
+        self.selected_tasks = []
+        gtk.TreeView.__init__(self)
+
+        self._setupStore()
+        cbr = gtk.CellRendererToggle()
+        col = gtk.TreeViewColumn('', cbr, active = 0)
+        cbr.connect("toggled", self._taskToggled)
+        self.append_column(col)
+
+        col = gtk.TreeViewColumn('Abiquo Additional Components', gtk.CellRendererText(), text = 1)
+        col.set_clickable(False)
+        self.append_column(col)
+
+    def _setupStore(self):
+        self.store = gtk.ListStore(gobject.TYPE_BOOLEAN, gobject.TYPE_STRING, gobject.TYPE_STRING)
+        self.store.append([False, "Abiquo Remote Repository", 'abiquo-remote-repository'])
+        self.store.append([False, "Abiquo DCHP Relay", 'abiquo-dhcp-relay'])
+        self.store.append([False, "Abiquo NFS Repository", 'abiquo-nfs-repository'])
+        self.set_model(self.store)
+
+    def _taskToggled(self, path, row):
+        i = self.store.get_iter(int(row))
+        val = self.store.get_value(i, 0)
+        self.store.set_value(i, 0, not val)
+        comp = self.store.get_value(i, 2)
+        if not val:
+            print 'Selected %s' % comp
+            self.selected_tasks.append(comp)
+        else:
+            print "removing %s" % comp
+            self.selected_tasks.remove(comp)
+
+class AbiquoPlatformTasks(gtk.TreeView):
+    def __init__(self):
+        self.selected_task = 'none'
+        gtk.TreeView.__init__(self)
+
+        self._setupStore()
+        cbr = gtk.CellRendererToggle()
+        cbr.set_radio(True)
+        col = gtk.TreeViewColumn('', cbr, active = 0)
+        cbr.connect("toggled", self._taskToggled)
+        self.get_selection().connect('changed', self._selectionChanged)
+
+        self.append_column(col)
+
+        col = gtk.TreeViewColumn('Available Components', gtk.CellRendererText(), text = 1)
+        col.set_clickable(False)
+        self.append_column(col)
+
+    def _setupStore(self):
+        self.store = gtk.ListStore(gobject.TYPE_BOOLEAN, gobject.TYPE_STRING, gobject.TYPE_STRING)
+        self.store.append([True, "None", 'none'])
+        self.store.append([False, "Cloud in a Box Install", 'cloud-in-a-box'])
+        self.store.append([False, "Monolithic Install", 'abiquo-monolithic'])
+        self.store.append([False, "Distributed Install", 'abiquo-distributed'])
+        self.set_model(self.store)
+
+
+    def _selectionChanged(self, selection):
+        #selection = self.store.get_value(iter, 1)
+        model, iter = selection.get_selected()
+        sel = self.store.get_value(iter, 2)
+
+    def _taskToggled(self, path, row):
+        i = self.store.get_iter(int(row))
+        for row in self.store:
+            row[0] = False
+            
+        val = self.store.get_value(i, 0)
+        self.store.set_value(i, 0, not val)
+        comp = self.store.get_value(i, 2)
+        self.selected_task = comp
+        print self.selected_task
+
+class AbiquoHypervisorTasks(AbiquoPlatformTasks):
+
+    def __init__(self):
+        AbiquoPlatformTasks.__init__(self)
+    
+    def _setupStore(self):
+        self.store = gtk.ListStore(gobject.TYPE_BOOLEAN, gobject.TYPE_STRING, gobject.TYPE_STRING)
+        self.store.append([True, "None", 'none'])
+        self.store.append([False, "KVM Cloud Node", 'abiquo-kvm'])
+        self.store.append([False, "Xen Cloud Node", 'abiquo-xen'])
+        self.store.append([False, "VirtualBox Cloud Node", 'abiquo-virtualbox'])
+        self.set_model(self.store)
+
+class OpscodeTasks(AbiquoPlatformTasks):
+
+    def __init__(self):
+        AbiquoPlatformTasks.__init__(self)
+    
+    def _setupStore(self):
+        self.store = gtk.ListStore(gobject.TYPE_BOOLEAN, gobject.TYPE_STRING, gobject.TYPE_STRING)
+        self.store.append([True, "None", 'none'])
+        self.store.append([False, "Opscode Chef Server", 'opschef-server'])
+        self.store.append([False, "Opscode Chef Client", 'opschef-client'])
+        self.set_model(self.store)
+
+class AbiquoStorageTasks(AbiquoPlatformTasks):
+
+    def __init__(self):
+        AbiquoPlatformTasks.__init__(self)
+    
+    def _setupStore(self):
+        self.store = gtk.ListStore(gobject.TYPE_BOOLEAN, gobject.TYPE_STRING, gobject.TYPE_STRING)
+        self.store.append([True, "None", 'none'])
+        self.store.append([False, "Abiquo LVM Server", 'abiquo-lvmiscsi'])
+        self.set_model(self.store)
+
 class TaskWindow(InstallWindow):
 
     def getNext(self):
-        tasks = self.xml.get_widget("selectedTasksList").get_model()
         selected_groups = []
-        for (task, grps) in tasks:
-            groups = []
-            if type(grps) == str:
-                groups = groups + [grps]
-            else:
-                groups = groups + grps
 
-            map(self.backend.selectGroup, groups)
-            selected_groups = selected_groups + groups 
-
+        t = self.abiquo_storage_tasks.selected_task
+        if t != 'none':
+            selected_groups.append(t)
+        t = self.opscode_tasks.selected_task
+        if t != 'none':
+            selected_groups.append(self.opscode_tasks.selected_task)
+        t = self.abiquo_hypervisor_tasks.selected_task
+        if t != 'none':
+            selected_groups.append(self.abiquo_hypervisor_tasks.selected_task)
+        
+        t = self.abiquo_platform_tasks.selected_task
+        if t != 'none':
+            selected_groups.append(self.abiquo_platform_tasks.selected_task)
+        
+        t = self.abiquo_additional_tasks.selected_tasks
+        if len(t) > 0:
+            selected_groups += self.abiquo_additional_tasks.selected_tasks
+        
         self.anaconda.id.abiquo.selectedGroups = selected_groups
+        map(self.backend.selectGroup, selected_groups)
+
+        if 'abiquo-distributed' not in selected_groups:
+            self.dispatch.skipStep("abiquo_distributed", skip = 1)
 
         if 'cloud-in-a-box' in selected_groups:
             log.info("cloud-in-a-box selected, skip.")
@@ -259,16 +383,29 @@ class TaskWindow(InstallWindow):
         lbl = self.xml.get_widget("taskDescLabel")
         model, iter = tree_selection.get_selected()
         selection = model.get_value(iter, 0)
-        self.current_task = selection
-        lbl.set_markup(abiquo_groups.group_descriptions[selection])
-        subtasks = abiquo_groups.groups[selection]
+        w = self.xml.get_widget("subtaskSW")
+        if w.get_child():
+            w.remove(w.get_child())
+        if selection == "Abiquo Platform":
+            w.add(self.abiquo_platform_tasks)
+            self.abiquo_platform_tasks.show()
+        elif selection == "Cloud Nodes":
+            w.add(self.abiquo_hypervisor_tasks)
+            self.abiquo_hypervisor_tasks.show()
+        elif selection == "Opscode Chef":
+            w.add(self.opscode_tasks)
+            self.opscode_tasks.show()
+        elif selection == "Storage Plugins":
+            w.add(self.abiquo_storage_tasks)
+            self.abiquo_storage_tasks.show()
+        elif selection == "Additional Components":
+            w.add(self.abiquo_additional_tasks)
+            self.abiquo_additional_tasks.show()
+        else:
+            pass
 
-        model = self.subtask_models[selection]
-        tl = self.xml.get_widget("subtaskList")
-        tl.set_model(model)
-        if len(model) <= 0:
-            for t in subtasks:
-                self.subtask_models[selection].append([0,t])
+        lbl.set_markup(self.tasks_descriptions[selection])
+
 
     def _createTaskStore(self):
         store = gtk.ListStore(str)
@@ -282,17 +419,8 @@ class TaskWindow(InstallWindow):
         col.set_clickable(False)
         tl.append_column(col)
 
-        for k in abiquo_groups.groups:
+        for k in self.installer_tasks:
             store.append([k])
-
-    def _createSelectedTasksStore(self):
-        store = gtk.ListStore(str, gobject.TYPE_PYOBJECT)
-        tl = self.xml.get_widget("selectedTasksList")
-        tl.set_model(store)
-
-        col = gtk.TreeViewColumn('Selected Components', gtk.CellRendererText(), text = 0)
-        col.set_clickable(False)
-        tl.append_column(col)
 
     def _createSubgroupsDiag(self):
         list = self.diag1_xml.get_widget("subgroupList")
@@ -356,59 +484,6 @@ class TaskWindow(InstallWindow):
         else:
             return 1
 
-    def _taskToggled(self, data, row, store):
-        model = self.subtask_models[self.current_task]
-        i = model.get_iter(int(row))
-        component = model.get_value(i, 1)
-        if not self._checkValidSelection(component):
-            return
-
-        val = model.get_value(i, 0)
-        model.set_value(i, 0, not val)
-        tl = self.xml.get_widget("selectedTasksList")
-        store = tl.get_model()
-        if not val:
-            # sub-groups available, present dialog
-            if type(abiquo_groups.groups[self.current_task][component]) is list:
-                res = self._presentSubgroups(abiquo_groups.groups[self.current_task][component])
-                selections = 0
-                for row in self.diag1_xml.get_widget("subgroupList").get_model():
-                    if row[0]:
-                        selections = 1
-                if not selections:
-                    model.set_value(i, 0, 0)
-                    #store.append([component, abiquo_groups.groups[self.current_task]])
-            else:
-                store.append([component, abiquo_groups.groups[self.current_task][component]])
-        else:
-            if type(abiquo_groups.groups[self.current_task][component]) is list:
-                for row in self.diag1_xml.get_widget("subgroupList").get_model():
-                    for row2 in store:
-                        if row2[0] == row[1]:
-                            store.remove(row2.iter)
-
-            iter = store.get_iter_first()
-            while iter and store.iter_is_valid(iter):
-                curr = store.get_value(iter, 0)
-                if curr == component:
-                    store.remove(iter)
-                iter = store.iter_next(iter)
-
-    def _createSubtaskStore(self):
-        for k in abiquo_groups.groups:
-            self.subtask_models[k] = gtk.ListStore(gobject.TYPE_BOOLEAN, gobject.TYPE_STRING)
-
-        tl = self.xml.get_widget("subtaskList")
-        cbr = gtk.CellRendererToggle()
-        col = gtk.TreeViewColumn('', cbr, active = 0)
-        cbr.connect("toggled", self._taskToggled, 0)
-        tl.append_column(col)
-
-
-        col = gtk.TreeViewColumn('Text', gtk.CellRendererText(), text = 1)
-        col.set_clickable(False)
-        tl.append_column(col)
-    
     def getScreen (self, anaconda):
         self.intf = anaconda.intf
         self.dispatch = anaconda.dispatch
@@ -418,15 +493,27 @@ class TaskWindow(InstallWindow):
         self.tasks = anaconda.id.instClass.tasks
         self.repos = anaconda.id.instClass.repos
         
-        (self.xml, vbox) = gui.getGladeWidget("tasksel.glade", "vbox2")
+        (self.xml, vbox) = gui.getGladeWidget("tasksel.glade", "mainWidget")
         (self.diag1_xml, diag) = gui.getGladeWidget("tasksel.glade", "dialog1")
 
         lbl = self.xml.get_widget("mainLabel")
         self.subtask_models = {}
         self.current_task = 0
-        self._createSubtaskStore()
-        self._createTaskStore()
-        self._createSelectedTasksStore()
-        self._createSubgroupsDiag()
 
+        self.installer_tasks = ["Abiquo Platform", "Cloud Nodes", "Storage Plugins", "Opscode Chef", "Additional Components"]
+        self.tasks_descriptions = {
+            "Cloud Nodes": "<b>Cloud Nodes</b>\nInstall Abiquo KVM, Xen or VirtualBox Cloud Nodes (OpenSource hypervisors tested and supported by Abiquo).",
+            "Opscode Chef": "<b>Chef</b>\nInstall Chef Server/Client components",
+            "Abiquo Platform": "<b>Abiquo Platform</b>\nInstall selected Abiquo platform components to create a monolithic, distributed or cloud-in-a-box Abiquo installation.",
+            "Storage Plugins": "<b>Storage Plugins</b>\nInstall required plugins to manage external storage such as a Linux LVM storage server.",
+            "Additional Components": "<b>Additional Components</b>\nAbiquo Remote Repository, NFS Repository, etc.",
+        }
+
+        self._createTaskStore()
+        self.abiquo_platform_tasks = AbiquoPlatformTasks()
+        self.abiquo_hypervisor_tasks = AbiquoHypervisorTasks()
+        self.opscode_tasks = OpscodeTasks()
+        self.abiquo_storage_tasks = AbiquoStorageTasks()
+        self.abiquo_additional_tasks = AbiquoAdditionalTasks()
         return vbox
+

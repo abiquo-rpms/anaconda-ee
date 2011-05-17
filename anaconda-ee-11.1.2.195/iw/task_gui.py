@@ -26,8 +26,9 @@ import logging
 log = logging.getLogger("anaconda")
 
 class AbiquoAdditionalTasks(gtk.TreeView):
-    def __init__(self):
+    def __init__(self,anaconda):
         self.selected_tasks = []
+        self.final_groups = anaconda.id.abiquo.selectedGroups
         gtk.TreeView.__init__(self)
 
         self._setupStore()
@@ -42,10 +43,15 @@ class AbiquoAdditionalTasks(gtk.TreeView):
 
     def _setupStore(self):
         self.store = gtk.ListStore(gobject.TYPE_BOOLEAN, gobject.TYPE_STRING, gobject.TYPE_STRING)
-        self.store.append([False, "Abiquo Remote Repository", 'abiquo-remote-repository'])
-        self.store.append([False, "Abiquo DCHP Relay", 'abiquo-dhcp-relay'])
-        self.store.append([False, "Abiquo NFS Repository", 'abiquo-nfs-repository'])
+        self.store.append([('abiquo-remote-repository' in self.final_groups), "Abiquo Remote Repository", 'abiquo-remote-repository'])
+        self.store.append([('abiquo-dhcp-relay' in self.final_groups), "Abiquo DCHP Relay", 'abiquo-dhcp-relay'])
+        self.store.append([('abiquo-nfs-repository' in self.final_groups), "Abiquo NFS Repository", 'abiquo-nfs-repository'])
         self.set_model(self.store)
+
+        for g in ['abiquo-nfs-repository', 'abiquo-remote-repository', 'abiquo-dhcp-relay']:
+            if (g in self.final_groups):
+                self.selected_tasks.append(g)
+
 
     def _taskToggled(self, path, row):
         i = self.store.get_iter(int(row))
@@ -53,14 +59,13 @@ class AbiquoAdditionalTasks(gtk.TreeView):
         self.store.set_value(i, 0, not val)
         comp = self.store.get_value(i, 2)
         if not val:
-            print 'Selected %s' % comp
             self.selected_tasks.append(comp)
         else:
-            print "removing %s" % comp
             self.selected_tasks.remove(comp)
 
 class AbiquoPlatformTasks(gtk.TreeView):
-    def __init__(self):
+    def __init__(self, anaconda):
+        self.final_groups = anaconda.id.abiquo.selectedGroups
         self.selected_task = 'none'
         gtk.TreeView.__init__(self)
 
@@ -79,10 +84,26 @@ class AbiquoPlatformTasks(gtk.TreeView):
 
     def _setupStore(self):
         self.store = gtk.ListStore(gobject.TYPE_BOOLEAN, gobject.TYPE_STRING, gobject.TYPE_STRING)
-        self.store.append([True, "None", 'none'])
-        self.store.append([False, "Cloud in a Box Install", 'cloud-in-a-box'])
-        self.store.append([False, "Monolithic Install", 'abiquo-monolithic'])
-        self.store.append([False, "Distributed Install", 'abiquo-distributed'])
+
+        # Check if no abiquo groups have been selected
+        sel = True
+        for g in ['abiquo-server', 'abiquo-remote-services', 'abiquo-v2v', 'cloud-in-a-box', 'abiquo-monolithic']:
+            if g in self.final_groups:
+                sel = False
+        self.store.append([sel, "None", 'none'])
+
+        # check if cloud-in-a-box previously selected
+        self.store.append([('cloud-in-a-box' in self.final_groups), "Cloud in a Box Install", 'cloud-in-a-box'])
+
+        # check if monolithic previously selected
+        self.store.append([('abiquo-monolithic' in self.final_groups), "Monolithic Install", 'abiquo-monolithic'])
+
+        # check if distributed previously selected
+        sel = False
+        for g in ['abiquo-server', 'abiquo-remote-services', 'abiquo-v2v']:
+            if g in self.final_groups:
+                sel = True
+        self.store.append([sel, "Distributed Install", 'abiquo-distributed'])
         self.set_model(self.store)
 
 
@@ -104,38 +125,51 @@ class AbiquoPlatformTasks(gtk.TreeView):
 
 class AbiquoHypervisorTasks(AbiquoPlatformTasks):
 
-    def __init__(self):
-        AbiquoPlatformTasks.__init__(self)
+    def __init__(self, anaconda):
+        self.final_groups = anaconda.id.abiquo.selectedGroups
+        AbiquoPlatformTasks.__init__(self, anaconda)
     
     def _setupStore(self):
         self.store = gtk.ListStore(gobject.TYPE_BOOLEAN, gobject.TYPE_STRING, gobject.TYPE_STRING)
-        self.store.append([True, "None", 'none'])
-        self.store.append([False, "KVM Cloud Node", 'abiquo-kvm'])
-        self.store.append([False, "Xen Cloud Node", 'abiquo-xen'])
-        self.store.append([False, "VirtualBox Cloud Node", 'abiquo-virtualbox'])
+        
+        sel = True
+        for g in ['abiquo-kvm', 'abiquo-xen', 'abiquo-virtualbox']:
+            if g in self.final_groups:
+                sel = False
+        self.store.append([sel, "None", 'none'])
+        self.store.append([('abiquo-kvm' in self.final_groups), "KVM Cloud Node", 'abiquo-kvm'])
+        self.store.append([('abiquo-xen' in self.final_groups), "Xen Cloud Node", 'abiquo-xen'])
+        self.store.append([('abiquo-virtualbox' in self.final_groups), "VirtualBox Cloud Node", 'abiquo-virtualbox'])
         self.set_model(self.store)
 
 class OpscodeTasks(AbiquoPlatformTasks):
 
-    def __init__(self):
-        AbiquoPlatformTasks.__init__(self)
+    def __init__(self, anaconda):
+        self.final_groups = anaconda.id.abiquo.selectedGroups
+        AbiquoPlatformTasks.__init__(self, anaconda)
     
     def _setupStore(self):
         self.store = gtk.ListStore(gobject.TYPE_BOOLEAN, gobject.TYPE_STRING, gobject.TYPE_STRING)
-        self.store.append([True, "None", 'none'])
-        self.store.append([False, "Opscode Chef Server", 'opschef-server'])
-        self.store.append([False, "Opscode Chef Client", 'opschef-client'])
+        
+        sel = True
+        for g in ['opschef-server', 'opschef-client']:
+            if g in self.final_groups:
+                sel = False
+        self.store.append([sel, "None", 'none'])
+        self.store.append([('opschef-server' in self.final_groups), "Opscode Chef Server", 'opschef-server'])
+        self.store.append([('opschef-client' in self.final_groups), "Opscode Chef Client", 'opschef-client'])
         self.set_model(self.store)
 
 class AbiquoStorageTasks(AbiquoPlatformTasks):
 
-    def __init__(self):
-        AbiquoPlatformTasks.__init__(self)
+    def __init__(self, anaconda):
+        self.final_groups = anaconda.id.abiquo.selectedGroups
+        AbiquoPlatformTasks.__init__(self, anaconda)
     
     def _setupStore(self):
         self.store = gtk.ListStore(gobject.TYPE_BOOLEAN, gobject.TYPE_STRING, gobject.TYPE_STRING)
-        self.store.append([True, "None", 'none'])
-        self.store.append([False, "Abiquo LVM Server", 'abiquo-lvmiscsi'])
+        self.store.append([('abiquo-lvmiscsi' not in self.final_groups), "None", 'none'])
+        self.store.append([('abiquo-lvmiscsi' in self.final_groups), "Abiquo LVM Server", 'abiquo-lvmiscsi'])
         self.set_model(self.store)
 
 class TaskWindow(InstallWindow):
@@ -159,10 +193,14 @@ class TaskWindow(InstallWindow):
         
         t = self.abiquo_additional_tasks.selected_tasks
         if len(t) > 0:
-            selected_groups += self.abiquo_additional_tasks.selected_tasks
+            selected_groups = selected_groups + self.abiquo_additional_tasks.selected_tasks
         
         self.anaconda.id.abiquo.selectedGroups = selected_groups
-        map(self.backend.selectGroup, selected_groups)
+        for g in self.abiquo_groups:
+            if g in selected_groups:
+                map(self.backend.selectGroup, [g])
+            else:
+                map(self.backend.deselectGroup, [g])
 
         if 'abiquo-distributed' not in selected_groups:
             self.dispatch.skipStep("abiquo_distributed", skip = 1)
@@ -489,6 +527,13 @@ class TaskWindow(InstallWindow):
         self.dispatch = anaconda.dispatch
         self.backend = anaconda.backend
         self.anaconda = anaconda
+        self.abiquo_groups = ['cloud-in-a-box', 'abiquo-monolithic',
+                  'abiquo-server', 'abiquo-remote-services', 'abiquo-v2v',
+                  'opschef-server','opschef-client',
+                  'abiquo-kvm', 'abiquo-xen', 'abiquo-virtualbox',
+                  'abiquo-dhcp-relay', 'abiquo-nfs-repository',
+                  'abiquo-remote-repository'
+                  ]
 
         self.tasks = anaconda.id.instClass.tasks
         self.repos = anaconda.id.instClass.repos
@@ -497,8 +542,6 @@ class TaskWindow(InstallWindow):
         (self.diag1_xml, diag) = gui.getGladeWidget("tasksel.glade", "dialog1")
 
         lbl = self.xml.get_widget("mainLabel")
-        self.subtask_models = {}
-        self.current_task = 0
 
         self.installer_tasks = ["Abiquo Platform", "Cloud Nodes", "Storage Plugins", "Opscode Chef", "Additional Components"]
         self.tasks_descriptions = {
@@ -510,10 +553,10 @@ class TaskWindow(InstallWindow):
         }
 
         self._createTaskStore()
-        self.abiquo_platform_tasks = AbiquoPlatformTasks()
-        self.abiquo_hypervisor_tasks = AbiquoHypervisorTasks()
-        self.opscode_tasks = OpscodeTasks()
-        self.abiquo_storage_tasks = AbiquoStorageTasks()
-        self.abiquo_additional_tasks = AbiquoAdditionalTasks()
+        self.abiquo_platform_tasks = AbiquoPlatformTasks(anaconda)
+        self.abiquo_hypervisor_tasks = AbiquoHypervisorTasks(anaconda)
+        self.opscode_tasks = OpscodeTasks(anaconda)
+        self.abiquo_storage_tasks = AbiquoStorageTasks(anaconda)
+        self.abiquo_additional_tasks = AbiquoAdditionalTasks(anaconda)
         return vbox
 

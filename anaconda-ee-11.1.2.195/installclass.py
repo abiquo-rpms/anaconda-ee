@@ -437,13 +437,15 @@ class BaseInstallClass:
 
     def setDefaultPartitioning(self, partitions, clear = CLEARPART_TYPE_LINUX,
                                doClear = 1):
-        autorequests = [ ("/", None, 1024, None, 1, 1, 1) ]
+        autorequests = [ ("/", None, 1024, ABI_DEFAULT_ROOT_SIZE, 1, 1, 1) ]
 
         bootreq = getAutopartitionBoot()
         if bootreq:
             autorequests.extend(bootreq)
 
         (minswap, maxswap) = iutil.swapSuggestion()
+        # force max swap 1024MB
+        maxswap = ABI_MAX_SWAP  
         autorequests.append((None, "swap", minswap, maxswap, 1, 1, 1))
 
         if doClear:

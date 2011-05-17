@@ -19,6 +19,14 @@ from rhpl.translate import _, N_
 class WelcomeWindow (InstallWindow):		
 
     windowTitle = "" #N_("Welcome")
+    
+    def getNext(self):
+        pass
+        # TEST: Skip Step
+        #dispatch.skipStep("partition", permanent=1)
+        #dispatch.skipStep("parttype", permanent=1)
+        #dispatch.skipStep("bootloader", permanent=1)
+
 
     def __init__ (self, ics):
 	InstallWindow.__init__ (self, ics)
@@ -29,5 +37,7 @@ class WelcomeWindow (InstallWindow):
         pix = gui.readImageFromFile("splash.png", dither=False)
         box = gtk.EventBox ()
         box.add (pix)
+        #(self.xml, box) = gui.getGladeWidget("install_type.glade", "hbox1")
+
         return box
 

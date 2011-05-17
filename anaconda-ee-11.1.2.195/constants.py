@@ -60,6 +60,9 @@ NUMBER_OF_CDS = 6
 
 # ABIQUO ANACONDA RELEASE
 ABI_ANACONDA_RELEASE = '20110223'
+ABI_DEFAULT_LVM_VOLGROUP = 'abiquo'
+ABI_DEFAULT_ROOT_SIZE = 5120
+ABI_MAX_SWAP = 1024
 
 # common string needs to be easy to change
 import product

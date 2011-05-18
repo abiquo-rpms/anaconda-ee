@@ -96,6 +96,6 @@ class Abiquo:
         self.abiquo_dhcprelay_relay_ip = ''
         self.abiquo_dhcprelay_dhcpd_ip = ''
         self.abiquo_dhcprelay_service_network = '10.0.0.0'
-
+        self.install_type = 'ciab'
 
 

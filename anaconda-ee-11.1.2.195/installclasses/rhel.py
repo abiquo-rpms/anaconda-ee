@@ -78,6 +78,11 @@ class InstallClass(BaseInstallClass):
     def setGroupSelection(self, anaconda):
         grps = anaconda.backend.getDefaultGroups(anaconda)
         map(lambda x: anaconda.backend.selectGroup(x), grps)
+        if anaconda.id.abiquo.install_type == 'ciab':
+            map(anaconda.backend.selectGroup, ['cloud-in-a-box'])
+            anaconda.id.abiquo.selectedGroups = ['cloud-in-a-box']
+        else:
+            map(anaconda.backend.deselectGroup, ['cloud-in-a-box'])
 
     def setSteps(self, dispatch):
 	BaseInstallClass.setSteps(self, dispatch);

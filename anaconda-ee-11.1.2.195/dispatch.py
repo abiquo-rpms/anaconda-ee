@@ -67,6 +67,7 @@ installSteps = [
     ("regkey", regKeyScreen, ),
     ("findrootparts", findRootParts, ),
     ("findinstall", ),
+    ("abiquo_install_type", ),
     ("partitionobjinit", partitionObjectsInitialize, ),
     ("parttype", ),    
     ("autopartitionexecute", doAutoPartition, ),

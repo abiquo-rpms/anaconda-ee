@@ -16,7 +16,7 @@ from iw_gui import *
 class AbiquoDistributedWindow(InstallWindow):
     def getNext(self):
         self.data.abiquo.selectedGroups += self.selected_tasks
-        map(self.backend.selectGroup, selected_groups)
+        map(self.backend.selectGroup, self.selected_tasks)
 
     def _selectionChanged(self, btn):
         lbl = btn.get_label()

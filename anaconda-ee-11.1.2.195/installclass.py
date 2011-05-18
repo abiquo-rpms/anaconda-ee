@@ -133,6 +133,7 @@ class BaseInstallClass:
                  "findrootparts",
 		 "betanag",
 		 "installtype",
+                 "abiquo_install_type",
                  "partitionobjinit",
                  "parttype",
                  "autopartitionexecute",

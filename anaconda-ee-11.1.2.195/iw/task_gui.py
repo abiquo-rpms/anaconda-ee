@@ -168,8 +168,8 @@ class AbiquoStorageTasks(AbiquoPlatformTasks):
     
     def _setupStore(self):
         self.store = gtk.ListStore(gobject.TYPE_BOOLEAN, gobject.TYPE_STRING, gobject.TYPE_STRING)
-        self.store.append([('abiquo-lvmiscsi' not in self.final_groups), "None", 'none'])
-        self.store.append([('abiquo-lvmiscsi' in self.final_groups), "Abiquo LVM Server", 'abiquo-lvmiscsi'])
+        self.store.append([('abiquo-lvm-storage-server' not in self.final_groups), "None", 'none'])
+        self.store.append([('abiquo-lvm-storage-server' in self.final_groups), "Abiquo LVM Server", 'abiquo-lvm-storage-server'])
         self.set_model(self.store)
 
 class TaskWindow(InstallWindow):
@@ -433,7 +433,7 @@ class TaskWindow(InstallWindow):
         elif selection == "Opscode Chef":
             w.add(self.opscode_tasks)
             self.opscode_tasks.show()
-        elif selection == "Storage Plugins":
+        elif selection == "Storage Servers":
             w.add(self.abiquo_storage_tasks)
             self.abiquo_storage_tasks.show()
         elif selection == "Additional Components":
@@ -529,6 +529,7 @@ class TaskWindow(InstallWindow):
         self.anaconda = anaconda
         self.abiquo_groups = ['cloud-in-a-box', 'abiquo-monolithic',
                   'abiquo-server', 'abiquo-remote-services', 'abiquo-v2v',
+                  'abiquo-lvm-storage-server',
                   'opschef-server','opschef-client',
                   'abiquo-kvm', 'abiquo-xen', 'abiquo-virtualbox',
                   'abiquo-dhcp-relay', 'abiquo-nfs-repository',
@@ -543,12 +544,12 @@ class TaskWindow(InstallWindow):
 
         lbl = self.xml.get_widget("mainLabel")
 
-        self.installer_tasks = ["Abiquo Platform", "Cloud Nodes", "Storage Plugins", "Opscode Chef", "Additional Components"]
+        self.installer_tasks = ["Abiquo Platform", "Cloud Nodes", "Storage Servers", "Opscode Chef", "Additional Components"]
         self.tasks_descriptions = {
             "Cloud Nodes": "<b>Cloud Nodes</b>\nInstall Abiquo KVM, Xen or VirtualBox Cloud Nodes (OpenSource hypervisors tested and supported by Abiquo).",
             "Opscode Chef": "<b>Chef</b>\nInstall Chef Server/Client components",
             "Abiquo Platform": "<b>Abiquo Platform</b>\nInstall selected Abiquo platform components to create a monolithic, distributed or cloud-in-a-box Abiquo installation.",
-            "Storage Plugins": "<b>Storage Plugins</b>\nInstall required plugins to manage external storage such as a Linux LVM storage server.",
+            "Storage Servers": "<b>Storage Servers</b>\nInstall required plugins to manage external storage such as a Linux LVM storage server.",
             "Additional Components": "<b>Additional Components</b>\nAbiquo Remote Repository, NFS Repository, etc.",
         }
 

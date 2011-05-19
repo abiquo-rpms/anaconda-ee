@@ -408,8 +408,7 @@ def createSuggestedVGName(partitions):
     """
     i = 0
     while 1:
-        tmpname = "%s%02d" % (ABI_DEFAULT_LVM_VOLGROUP,i,)
-
+        tmpname = "VolGroup%02d" % (i,)
 	if not partitions.isVolumeGroupNameInUse(tmpname):
 	    break
 

@@ -22,6 +22,7 @@ class AbiquoInstallTypeWindow (InstallWindow):
         ciab = self.xml.get_widget('ciabRadio')
         #advanced = self.xml.get_widget('ciabRadio')
         if ciab.get_active():
+            self.anaconda.id.abiquo.selectedGroups = ['cloud-in-a-box']
             if not self.intf.messageWindow("<b>Warning</b>",
                          "<b>This will wipe out your disk</b>\n\n"
                          "Are you sure?",

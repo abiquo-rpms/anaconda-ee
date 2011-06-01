@@ -165,7 +165,7 @@
 		<widget class="GtkLabel" id="taskDescLabel">
 		  <property name="width_request">242</property>
 		  <property name="visible">True</property>
-		  <property name="label" translatable="yes">&lt;big&gt;&lt;b&gt;Make a choice&lt;/b&gt;&lt;/big&gt;
+		  <property name="label" translatable="yes">&lt;big&gt;&lt;b&gt;Select components&lt;/b&gt;&lt;/big&gt;
 Use the panel on the left to select the components you want to install.</property>
 		  <property name="use_underline">False</property>
 		  <property name="use_markup">True</property>

@@ -15,6 +15,7 @@ task :updateimg do
   Dir['anaconda-ee-11.1.2.195/iw/*'].each do |f|
     FileUtils.cp f, '/mnt/'
   end
+  FileUtils.cp_r 'anaconda-ee-11.1.2.195/abiquo_upgrades', '/mnt'
   `sudo umount /mnt/`
   `scp /tmp/updates.img root@mirror:/mirror/`
 end

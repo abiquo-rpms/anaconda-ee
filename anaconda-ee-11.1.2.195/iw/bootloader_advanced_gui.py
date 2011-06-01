@@ -71,7 +71,7 @@ class AdvancedBootloaderWindow(InstallWindow):
         self.forceLBA.set_active(self.bl.forceLBA32)
 
         label = gui.WrappingLabel(_("If you wish to add default options to the "
-			    "boot command, enter them into "
+			    "boot command, enter them in "
 			    "the 'General kernel parameters' field."))
 	label.set_alignment(0.0, 0.0)
         self.options_vbox.pack_start(label, False)

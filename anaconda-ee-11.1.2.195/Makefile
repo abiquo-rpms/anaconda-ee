@@ -6,7 +6,7 @@ CVSROOT ?= ${CVSROOT:-$(shell cat CVS/Root 2>/dev/null)}
 
 SUBDIRS = isys wlite stubs loader2 po \
 	    textw utils scripts bootdisk installclasses \
-	    iw pixmaps isomd5sum command-stubs ui
+	    iw pixmaps isomd5sum command-stubs ui abiquo_upgrades
 # fonts aren't on s390/s390x
 ifneq (s390, $(ARCH))
 ifneq (s390x, $(ARCH))
@@ -56,7 +56,7 @@ install-python:
 	cp -var $(PYFILES) $(DESTDIR)/$(PYTHONLIBDIR)
 	./py-compile --basedir $(DESTDIR)/$(PYTHONLIBDIR) $(PYFILES)
 	install -m 755 anaconda $(DESTDIR)/usr/bin/anaconda
-	for d in installclasses isys iw textw; do make DESTDIR=`cd $(DESTDIR); pwd` -C $$d install; [ $$? = 0 ] || exit 1; done
+	for d in installclasses abiquo_upgrades isys iw textw; do make DESTDIR=`cd $(DESTDIR); pwd` -C $$d install; [ $$? = 0 ] || exit 1; done
 
 install: 
 	@if [ "$(DESTDIR)" = "" ]; then \

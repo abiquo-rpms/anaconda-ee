@@ -180,9 +180,9 @@ class TaskWindow(InstallWindow):
         t = self.abiquo_storage_tasks.selected_task
         if t != 'none':
             selected_groups.append(t)
-        t = self.opscode_tasks.selected_task
-        if t != 'none':
-            selected_groups.append(self.opscode_tasks.selected_task)
+        #t = self.opscode_tasks.selected_task
+        #if t != 'none':
+        #    selected_groups.append(self.opscode_tasks.selected_task)
         t = self.abiquo_hypervisor_tasks.selected_task
         if t != 'none':
             selected_groups.append(self.abiquo_hypervisor_tasks.selected_task)
@@ -430,9 +430,9 @@ class TaskWindow(InstallWindow):
         elif selection == "Cloud Nodes":
             w.add(self.abiquo_hypervisor_tasks)
             self.abiquo_hypervisor_tasks.show()
-        elif selection == "Opscode Chef":
-            w.add(self.opscode_tasks)
-            self.opscode_tasks.show()
+        #elif selection == "Opscode Chef":
+        #    w.add(self.opscode_tasks)
+        #    self.opscode_tasks.show()
         elif selection == "Storage Servers":
             w.add(self.abiquo_storage_tasks)
             self.abiquo_storage_tasks.show()
@@ -544,7 +544,8 @@ class TaskWindow(InstallWindow):
 
         lbl = self.xml.get_widget("mainLabel")
 
-        self.installer_tasks = ["Abiquo Platform", "Cloud Nodes", "Storage Servers", "Opscode Chef", "Additional Components"]
+        #self.installer_tasks = ["Abiquo Platform", "Cloud Nodes", "Storage Servers", "Opscode Chef", "Additional Components"]
+        self.installer_tasks = ["Abiquo Platform", "Cloud Nodes", "Storage Servers", "Additional Components"]
         self.tasks_descriptions = {
             "Cloud Nodes": "<b>Cloud Nodes</b>\nInstall Abiquo KVM, Xen or VirtualBox Cloud Nodes (OpenSource hypervisors tested and supported by Abiquo).",
             "Opscode Chef": "<b>Chef</b>\nInstall Chef Server/Client components",
@@ -556,7 +557,7 @@ class TaskWindow(InstallWindow):
         self._createTaskStore()
         self.abiquo_platform_tasks = AbiquoPlatformTasks(anaconda)
         self.abiquo_hypervisor_tasks = AbiquoHypervisorTasks(anaconda)
-        self.opscode_tasks = OpscodeTasks(anaconda)
+        #self.opscode_tasks = OpscodeTasks(anaconda)
         self.abiquo_storage_tasks = AbiquoStorageTasks(anaconda)
         self.abiquo_additional_tasks = AbiquoAdditionalTasks(anaconda)
         return vbox

@@ -58,6 +58,8 @@ class NetworkWindow(InstallWindow):
 	    newHostname = "localhost.localdomain"
 	    override = 0
 
+        self.handleDHCPWarning()
+
 	# If we're not using DHCP, skip setting up the network config
 	# boxes.  Otherwise, don't clear the values out if we are doing
 	# kickstart since we could be in interactive mode.  Don't want to
@@ -115,6 +117,12 @@ class NetworkWindow(InstallWindow):
 	self.network.hostname = newHostname
 	self.network.overrideDHCPhostname = override
 
+        if 'cloud-in-a-box' in self.id.abiquo.selectedGroups:
+            if len(self.devices) > 0:
+                first = self.devices.keys()[0]
+                if self.devices[first].info.has_key('IPADDR') and self.devices[first].info['IPADDR'] != 'dhcp':
+                    self.id.abiquo.abiquo_rabbitmq_host = self.devices[first].info['IPADDR']
+
         return None
 
     def setHostOptionsSensitivity(self):
@@ -144,6 +152,9 @@ class NetworkWindow(InstallWindow):
 	return not self.intf.messageWindow(_("Error With Data"),
 				_("You have not specified a hostname.  Depending on your network environment this may cause problems later."), type="custom", custom_buttons=["gtk-cancel", _("C_ontinue")])
 
+    def debugDialog(self, msg):
+        self.intf.messageWindow(_("DEBUG"), msg, type="custom", custom_buttons=["gtk-cancel", _("C_ontinue")])
+
     def handleMissingOptionalIP(self, field):
 	return not self.intf.messageWindow(_("Error With Data"),
 				_("You have not specified the field \"%s\".  Depending on your network environment this may cause problems later.") % (field,), type="custom", custom_buttons=["gtk-cancel", _("C_ontinue")])
@@ -167,6 +178,18 @@ class NetworkWindow(InstallWindow):
 
     def handleNoActiveDevices(self):
 	return self.intf.messageWindow(_("Error With Data"), _("You have no active network devices.  Your system will not be able to communicate over a network by default without at least one device active."), type="custom", custom_buttons=["gtk-cancel", _("C_ontinue")])
+
+    def handleDHCPWarning(self):
+        if network.anyUsingDHCP(self.devices, self.anaconda):
+            if 'cloud-in-a-box' in self.id.abiquo.selectedGroups:
+                if not self.intf.messageWindow(_("DHCP Not Recommended"), _("Cloud in a Box needs a fixed IP address to function properly. Continue anyway?"), type="custom", custom_buttons=["gtk-cancel", _("C_ontinue")]):
+                    raise gui.StayOnScreen
+            else:
+                if not self.intf.messageWindow(_("DHCP Not Recommended"), _("Using DHCP in Abiquo is not recommended becaulse IP address changes will cause problems. Continue anyway?"), type="custom", custom_buttons=["gtk-cancel", _("C_ontinue")]):
+                    raise gui.StayOnScreen
+                
+
+
     
     def editDevice(self, data):
         selection = self.ethdevices.get_selection()

@@ -16,7 +16,7 @@ import os
 import iutil
 import rhpl
 import abiquo_upgrades
-from abiquo_upgrades.abiquo_upgrade_post_175 import abiquo_upgrade_post
+from abiquo_upgrades.abiquo_upgrade_post_18 import abiquo_upgrade_post
 
 import logging
 log = logging.getLogger("anaconda")

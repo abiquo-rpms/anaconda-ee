@@ -24,8 +24,8 @@ class AbiquoInstallTypeWindow (InstallWindow):
         if ciab.get_active():
             self.anaconda.id.abiquo.selectedGroups = ['cloud-in-a-box']
             if not self.intf.messageWindow("<b>Warning</b>",
-                         "<b>This will wipe out your disk</b>\n\n"
-                         "Are you sure?",
+                         "<b>This will erase your hard disk</b>\n\n"
+                         "Continue anyway?",
                          type="yesno", custom_icon="question"):
                 raise gui.StayOnScreen
             self.anaconda.id.abiquo.install_type = 'ciab'
@@ -39,6 +39,7 @@ class AbiquoInstallTypeWindow (InstallWindow):
             self.dispatch.skipStep("abiquo_distributed", skip=1)
             self.dispatch.skipStep("abiquo_dhcp_relay", skip=1)
         else:
+            self.anaconda.id.abiquo.selectedGroups = []
             self.anaconda.id.abiquo.install_type = 'advanced'
             self.dispatch.skipStep("tasksel", skip=0)
             self.dispatch.skipStep("partition", skip=0)

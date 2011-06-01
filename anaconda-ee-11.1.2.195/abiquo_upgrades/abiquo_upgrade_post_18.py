@@ -22,19 +22,16 @@ def abiquo_upgrade_post(anaconda):
       `7TYY"^ "^  "^ ?TYYY=`    7=   ` ????!``?TY   ?TYY"^`     .?TY9"=`
    
    
-
-   Abiquo Release 1.7.5-GA
-
 """)
     f.close()
 
     # apply the delta schema
-    schema_path = anaconda.rootPath + "/usr/share/doc/abiquo-server/database/kinton-delta-1_7_0-to-1_7_5.sql"
+    schema_path = anaconda.rootPath + "/usr/share/doc/abiquo-server/database/kinton-delta-1_7_6-to-1_8_0.sql"
 
     # Upgrade database if this is a server install
     if os.path.exists(schema_path):
         schema = open(schema_path)
-        log.info("ABIQUO: Updating Abiquo 1.7.0 database...")
+        log.info("ABIQUO: Updating Abiquo database...")
         iutil.execWithRedirect("/sbin/ifconfig",
                                 ['lo', 'up'],
                                 stdout="/dev/tty5", stderr="/dev/tty5",
@@ -53,7 +50,7 @@ def abiquo_upgrade_post(anaconda):
         schema.close()
 
     # restore fstab
-    backup_dir = anaconda.rootPath + '/opt/abiquo/backup/1.7.0'
+    backup_dir = anaconda.rootPath + '/opt/abiquo/backup/1.7.6'
     if os.path.exists('%s/fstab.anaconda' % backup_dir):
         shutil.copyfile("%s/fstab.anaconda" % backup_dir,
                 '%s/etc/fstab' % anaconda.rootPath)

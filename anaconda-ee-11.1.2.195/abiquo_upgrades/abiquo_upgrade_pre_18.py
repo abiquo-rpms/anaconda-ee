@@ -8,14 +8,14 @@ import sys
 import os.path
 
 def abiquo_upgrade_pre(anaconda):
-    backup_dir = anaconda.rootPath + '/opt/abiquo/backup/1.7.0' 
+    backup_dir = anaconda.rootPath + '/opt/abiquo/backup/1.7.6' 
     if os.path.exists(backup_dir):
         anaconda.intf.messageWindow("Upgrade not possible",
                                     "Previous upgrade directory found. Aborting.")
 	sys.exit(0)
 
     win = anaconda.intf.progressWindow("Upgrading",
-                              "Nuclear Launch detected, upgrading to 1.7.5...", 
+                              "Nuclear Launch detected, upgrading to 1.8.0...", 
                               5)
     abiquo_config_dir = anaconda.rootPath + '/opt/abiquo/config'
     db_dir = anaconda.rootPath + '/var/lib/mysql/kinton'

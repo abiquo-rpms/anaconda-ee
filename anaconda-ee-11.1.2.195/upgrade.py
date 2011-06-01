@@ -34,7 +34,7 @@ from product import productName
 import rhpl
 from rhpl.translate import _
 import abiquo_upgrades
-from abiquo_upgrades.abiquo_upgrade_pre_175 import abiquo_upgrade_pre
+from abiquo_upgrades.abiquo_upgrade_pre_18 import abiquo_upgrade_pre
 
 import logging
 log = logging.getLogger("anaconda")

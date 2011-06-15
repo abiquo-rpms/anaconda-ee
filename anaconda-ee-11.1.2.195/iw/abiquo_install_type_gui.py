@@ -29,6 +29,8 @@ class AbiquoInstallTypeWindow (InstallWindow):
                          type="yesno", custom_icon="question"):
                 raise gui.StayOnScreen
             self.anaconda.id.abiquo.install_type = 'ciab'
+            self.anaconda.id.abiquo_rs.abiquo_appliancemanager_repositoryLocation = '127.0.0.1:/opt/vm_repository'
+            self.anaconda.id.abiquo_rs.abiquo_nfs_repository = '127.0.0.1:/opt/vm_repository'
             self.dispatch.skipStep("tasksel", skip=1)
             self.dispatch.skipStep("partition", skip=1)
             self.dispatch.skipStep("parttype", skip=1)

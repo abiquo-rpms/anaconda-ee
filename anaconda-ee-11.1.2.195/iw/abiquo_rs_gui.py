@@ -27,6 +27,8 @@ import yum.Errors
 import logging
 log = logging.getLogger("anaconda")
 
+import urlparse
+
 class AbiquoRSWindow(InstallWindow):
     def getNext(self):
         nfsUrl = self.xml.get_widget('abiquo_nfs_repository').get_text()
@@ -49,6 +51,18 @@ class AbiquoRSWindow(InstallWindow):
                                 type="warning")
             raise gui.StayOnScreen
 
+        # validate the host
+        host = nfsUrl.split(":")[0]
+        try:
+            network.sanityCheckIPString(host)
+        except:
+            if network.sanityCheckHostname(host) is not None:
+                self.intf.messageWindow(_("<b>Invalid NFS URL</b>"),
+                           _("NFS Repository URL is invalid."),
+                                    type="warning")
+                raise gui.StayOnScreen
+
+        # validate the abiquo server IP
         try:
             socket.inet_aton(serverIP.strip())
         except socket.error:
@@ -78,5 +92,9 @@ class AbiquoRSWindow(InstallWindow):
 
         (self.xml, vbox) = gui.getGladeWidget("abiquo_rs.glade", "settingsBox")
         self.xml.get_widget('abiquo_nfs_repository').set_text(self.data.abiquo_rs.abiquo_nfs_repository)
-        self.xml.get_widget('abiquo_server_ip').set_text(self.data.abiquo_rs.abiquo_rabbitmq_host)
+        
+        server_ip = self.data.abiquo_rs.abiquo_rabbitmq_host
+        if server_ip == '127.0.0.1':
+            server_ip = '<server-ip>'
+        self.xml.get_widget('abiquo_server_ip').set_text(server_ip)
         return vbox

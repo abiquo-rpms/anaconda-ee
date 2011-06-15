@@ -15,35 +15,58 @@ from iw_gui import *
 
 class AbiquoDistributedWindow(InstallWindow):
     def getNext(self):
-        self.data.abiquo.selectedGroups += self.selected_tasks
-        map(self.backend.selectGroup, self.selected_tasks)
+        #self.data.abiquo.selectedGroups += self.selected_tasks
+        #for g in ['abiquo-server', 'abiquo-remote-services', 'abiquo-v2']:
+        #    if g not in self.data.abiquo.selectedGroups:
+        #        map(self.backend.deselectGroup, [g])
+        
+        # remove previously selected group not present now
+        map(self.backend.selectGroup, self.data.abiquo.selectedGroups)
+
+        if ('abiquo-remote-services' in self.anaconda.id.abiquo.selectedGroups):
+            self.dispatch.skipStep("abiquo_rs", skip = 0)
+        else:
+            self.dispatch.skipStep("abiquo_rs", skip = 1)
+        
+        if ('abiquo-v2v' in self.anaconda.id.abiquo.selectedGroups) and \
+                ('abiquo-nfs-repository' not in self.anaconda.id.abiquo.selectedGroups):
+            self.dispatch.skipStep("abiquo_v2v", skip = 0)
+        else:
+            self.dispatch.skipStep("abiquo_v2v", skip = 1)
 
     def _selectionChanged(self, btn):
         lbl = btn.get_label()
         if btn.get_active():
             if lbl == 'Abiquo Server':
-                self.selected_tasks.append('abiquo-server')
+                self.data.abiquo.selectedGroups.append('abiquo-server')
             elif lbl == 'Abiquo Remote Services':
-                self.selected_tasks.append('abiquo-remote-services')
+                self.data.abiquo.selectedGroups.append('abiquo-remote-services')
             elif lbl == 'Abiquo V2V Services':
-                self.selected_tasks.append('abiquo-v2v')
+                self.data.abiquo.selectedGroups.append('abiquo-v2v')
         else:
             if lbl == 'Abiquo Server':
-                self.selected_tasks.remove('abiquo-server')
+                self.data.abiquo.selectedGroups.remove('abiquo-server')
             elif lbl == 'Abiquo Remote Services':
-                self.selected_tasks.remove('abiquo-remote-services')
+                self.data.abiquo.selectedGroups.remove('abiquo-remote-services')
             elif lbl == 'Abiquo V2V Services':
-                self.selected_tasks.remove('abiquo-v2v')
-
-        print "Selected tasks %s" % self.selected_tasks
+                self.data.abiquo.selectedGroups.remove('abiquo-v2v')
 
     def getScreen (self, anaconda):
         self.anaconda = anaconda
         self.data = anaconda.id
         self.backend = anaconda.backend
-
-        self.selected_tasks = ['abiquo-server']
+        self.dispatch = anaconda.dispatch
+        
         (self.xml, vbox) = gui.getGladeWidget("abiquo_distributed.glade", "settingsBox")
+        for g in self.data.abiquo.selectedGroups:
+            if g == 'abiquo-server':
+                self.xml.get_widget('abiquoServerRadio').set_active(True)
+            elif g == 'abiquo-v2v':
+                self.xml.get_widget('abiquoV2VRadio').set_active(True)
+            elif g == 'abiquo-remote-services':
+                self.xml.get_widget('abiquoRSRadio').set_active(True)
+            else:
+                pass
         for btn in ['abiquoServerRadio', 'abiquoRSRadio', 'abiquoV2VRadio']:
             self.xml.get_widget(btn).connect(
                     'toggled',

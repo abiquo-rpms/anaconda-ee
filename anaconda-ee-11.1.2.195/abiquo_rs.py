@@ -64,6 +64,12 @@ class AbiquoRS:
                     "root")
             f.write("abiquo.storagemanager.netapp.password= %s\n" %
                     "temporal")
+            f.write("abiquo.dvs.enabled = %s\n" %
+                    self.abiquo_dvs_enabled)
+            f.write("abiquo.dvs.vcenter.user = %s\n" %
+                    self.abiquo_dvs_vcenter_user)
+            f.write("abiquo.dvs.vcenter.password = %s\n" %
+                    self.abiquo_dvs_vcenter_password)
             # CIFS repo is special...
             cifs_host = re.search("(\d{1,3}\.){3}\d{1,3}", self.abiquo_nfs_repository)
             if cifs_host:
@@ -76,7 +82,7 @@ class AbiquoRS:
                 self.abiquo_nfs_repository)
 
     def __init__(self):
-        self.abiquo_nfs_repository = 'localhost:/opt/vm_repository'
+        self.abiquo_nfs_repository = '<nfs-server-ip>:/opt/vm_repository'
         self.ontap_user = 'root'
         self.ontap_password = ''
         self.ontap_server_ip = '127.0.0.1'
@@ -85,7 +91,7 @@ class AbiquoRS:
         self.abiquo_rabbitmq_host = '127.0.0.1'
         self.abiquo_rabbitmq_port = '5672'
         self.abiquo_appliancemanager_localRepositoryPath = '/opt/vm_repository/'
-        self.abiquo_appliancemanager_repositoryLocation  = '127.0.0.1:/opt/vm_repository/'
+        self.abiquo_appliancemanager_repositoryLocation  = '<nfs-server-ip>:/opt/vm_repository/'
         self.abiquo_virtualfactory_hyperv_repositoryLocation = '//127.0.0.1/vm_repository/'
         self.abiquo_virtualfactory_xenserver_repositoryLocation = '127.0.0.1:/opt/vm_repository/'
         self.abiquo_virtualfactory_vmware_repositoryLocation = '127.0.0.1:/opt/vm_repository/'
@@ -94,3 +100,6 @@ class AbiquoRS:
         self.abiquo_virtualfactory_storagelink_password = 'storagelink'
         self.abiquo_redis_host =  '127.0.0.1'
         self.abiquo_redis_port = '6379'
+        self.abiquo_dvs_vcenter_password = ''
+        self.abiquo_dvs_vcenter_user = ''
+        self.abiquo_dvs_enabled = 'false'

@@ -67,6 +67,8 @@ class Abiquo:
                     self.abiquo_database_password )
             f.write("abiquo.database.host = %s\n" %
                     self.abiquo_database_host )
+            f.write("abiquo.auth.module = %s\n" %
+                    self.abiquo_auth_module )
             f.close()
 
 
@@ -96,6 +98,7 @@ class Abiquo:
         self.abiquo_dhcprelay_relay_ip = ''
         self.abiquo_dhcprelay_dhcpd_ip = ''
         self.abiquo_dhcprelay_service_network = '10.0.0.0'
+        self.abiquo_auth_module = 'abiquo'
         self.install_type = 'ciab'
 
 

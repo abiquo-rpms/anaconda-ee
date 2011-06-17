@@ -122,6 +122,8 @@ class NetworkWindow(InstallWindow):
                 first = self.devices.keys()[0]
                 if self.devices[first].info.has_key('IPADDR') and self.devices[first].info['IPADDR'] != 'dhcp':
                     self.id.abiquo.abiquo_rabbitmq_host = self.devices[first].info['IPADDR']
+                    self.id.abiquo_rs.abiquo_nfs_repository = "%s:/opt/vm_repository" % self.devices[first].info['IPADDR']
+
 
         return None
 

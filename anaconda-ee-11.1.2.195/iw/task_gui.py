@@ -63,7 +63,7 @@ class AbiquoAdditionalTasks(gtk.TreeView):
 
     def _setupStore(self):
         self.store = gtk.ListStore(gobject.TYPE_BOOLEAN, gobject.TYPE_STRING, gobject.TYPE_STRING)
-        self.store.append([('abiquo-remote-repository' in self.anaconda.id.abiquo.selectedGroups), "Abiquo Remote Repository", 'abiquo-remote-repository'])
+        #self.store.append([('abiquo-remote-repository' in self.anaconda.id.abiquo.selectedGroups), "Abiquo Remote Repository", 'abiquo-remote-repository'])
         self.store.append([('abiquo-dhcp-relay' in self.anaconda.id.abiquo.selectedGroups), "Abiquo DCHP Relay", 'abiquo-dhcp-relay'])
         self.store.append([('abiquo-nfs-repository' in self.anaconda.id.abiquo.selectedGroups), "Abiquo NFS Repository", 'abiquo-nfs-repository'])
         self.set_model(self.store)
@@ -209,7 +209,7 @@ class TaskWindow(InstallWindow):
             else:
                 map(self.backend.deselectGroup, [g])
 
-        for g in ['cloud-in-a-box', 'abiquo-monolithic']:
+        for g in ['abiquo-remote-services', 'cloud-in-a-box', 'abiquo-monolithic']:
             if g not in self.anaconda.id.abiquo.selectedGroups:
                 self.dispatch.skipStep("abiquo_rs", skip = 1)
                 self.dispatch.skipStep("abiquo_v2v", skip = 1)
@@ -219,7 +219,6 @@ class TaskWindow(InstallWindow):
                     self.dispatch.skipStep("abiquo_rs", skip = 1)
         else:
             self.dispatch.skipStep("abiquo_rs", skip = 0)
-
 
         if 'abiquo-distributed' not in self.anaconda.id.abiquo.selectedGroups:
             self.dispatch.skipStep("abiquo_distributed", skip = 1)

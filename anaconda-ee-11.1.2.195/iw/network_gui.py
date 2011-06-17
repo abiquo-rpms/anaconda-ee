@@ -186,7 +186,7 @@ class NetworkWindow(InstallWindow):
                         type="custom", custom_buttons=["gtk-cancel", _("C_ontinue")]):
                     raise gui.StayOnScreen
             else:
-                if not self.intf.messageWindow(_("DHCP Not Recommended"), _("Using DHCP in Abiquo is not recommended becaulse IP address changes will cause problems. Continue anyway?"), type="custom", custom_buttons=["gtk-cancel", _("C_ontinue")]):
+                if not self.intf.messageWindow(_("DHCP Not Recommended"), _("Using DHCP in Abiquo is not recommended because IP address changes will cause problems. Continue anyway?"), type="custom", custom_buttons=["gtk-cancel", _("C_ontinue")]):
                     raise gui.StayOnScreen
                 
 

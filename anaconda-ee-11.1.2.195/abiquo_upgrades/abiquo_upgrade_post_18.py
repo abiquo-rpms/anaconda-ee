@@ -5,25 +5,6 @@ import logging
 log = logging.getLogger("anaconda")
 
 def abiquo_upgrade_post(anaconda):
-    # write MOTD
-    f = open(anaconda.rootPath + "/etc/motd", "w")
-
-    f.write("""
-
-                  Mb            
-                  Mb            
-                  Mb            H@
-      ..J++...J,  Mb ..JJJ..    .,    .......    ..,      ...   ...+JJ.
-    .dMY=!?7HNMP`.MNMB"??7TMm. .Mb  .JrC???7wo,  ,Hr      dM. .JM9=!?7WN,
-   JHD`      ?#P .M#:      .HN..Hb .wZ!     .zw!`,Hr      dM`.d#!     ``Mr
-   MN:        MP` MP`      `J#\.Hb ?O:       .rc ,Hr      dM`,HF        W#
-   dMp       .HP` MN,      .dM`.Hb `OO.     .J?:`,Mb     .dM`.MN.      .Mt
-    ?MNJ....gMMP .MMNa.....HB! .Hb  `zro...J?WN&. 7Mm....dM%` .WNa....+M=
-      `7TYY"^ "^  "^ ?TYYY=`    7=   ` ????!``?TY   ?TYY"^`     .?TY9"=`
-   
-   
-""")
-    f.close()
 
     # apply the delta schema
     schema_path = anaconda.rootPath + "/usr/share/doc/abiquo-server/database/kinton-delta-1_7_6-to-1_8_0.sql"

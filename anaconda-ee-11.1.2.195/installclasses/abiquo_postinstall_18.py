@@ -9,28 +9,7 @@ log = logging.getLogger("anaconda")
 
 def abiquoPostInstall(anaconda):
     log.info("Abiquo 1.8 post")
-    f = open(anaconda.rootPath + "/etc/motd", "w")
 
-    f.write("""
-
-              Mb            
-              Mb            
-              Mb            H@
-  ..J++...J,  Mb ..JJJ..    .,    .......    ..,      ...   ...+JJ.
-.dMY=!?7HNMP`.MNMB"??7TMm. .Mb  .JrC???7wo,  ,Hr      dM. .JM9=!?7WN,
-JHD`      ?#P .M#:      .HN..Hb .wZ!     .zw!`,Hr      dM`.d#!     ``Mr
-MN:        MP` MP`      `J#\.Hb ?O:       .rc ,Hr      dM`,HF        W#
-dMp       .HP` MN,      .dM`.Hb `OO.     .J?:`,Mb     .dM`.MN.      .Mt
-?MNJ....gMMP .MMNa.....HB! .Hb  `zro...J?WN&. 7Mm....dM%` .WNa....+M=
-  `7TYY"^ "^  "^ ?TYYY=`    7=   ` ????!``?TY   ?TYY"^`     .?TY9"=`
-
-
-
-Abiquo Release 1.8-RC1
-
-""")
-    f.close()
-    
     # loopback up
     iutil.execWithRedirect("/sbin/ifconfig",
                             ['lo', 'up'],

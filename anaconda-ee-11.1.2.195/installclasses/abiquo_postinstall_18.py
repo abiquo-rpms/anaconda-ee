@@ -16,6 +16,12 @@ def abiquoPostInstall(anaconda):
                             stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="//mnt/sysimage/var/log/abiquo-postinst.log",
                             root=anaconda.rootPath)
 
+    # Disable firewall
+    iutil.execWithRedirect("/sbin/chkconfig",
+                            ['iptables', "off"],
+                            stdout="/dev/tty5", stderr="/dev/tty5",
+                            root=anaconda.rootPath)
+
     if (anaconda.backend.isGroupSelected('abiquo-kvm') or \
             anaconda.backend.isGroupSelected('abiquo-xen') or \
             anaconda.backend.isGroupSelected('abiquo-virtualbox') or \
@@ -52,10 +58,13 @@ def abiquoPostInstall(anaconda):
                                 root=anaconda.rootPath)
 
 
-    if anaconda.backend.isGroupSelected('abiquo-nfs-repository'):
+    if anaconda.backend.isGroupSelected('abiquo-nfs-repository') and not \
+            anaconda.backend.isGroupSelected('abiquo-monolithic'):
         f = open(anaconda.rootPath + "/etc/exports", "a")
         f.write("/opt/vm_repository    *(rw,no_root_squash,subtree_check,insecure)\n")
         f.close()
+    
+    if anaconda.backend.isGroupSelected('abiquo-nfs-repository'):
         iutil.execWithRedirect("/sbin/chkconfig",
                                 ['nfs', "on"],
                                 stdout="/dev/tty5", stderr="/dev/tty5",

@@ -121,12 +121,27 @@ def abiquoPostInstall(anaconda):
                                         ['abiquo-lvmiscsi', "on"],
                                         stdout="/dev/tty5", stderr="/dev/tty5",
                                         root=anaconda.rootPath)
+    
+    if anaconda.backend.isGroupSelected('abiquo-monolithic'):
+        iutil.execWithRedirect("/sbin/chkconfig",
+                                ['redis', "on"],
+                                stdout="/dev/tty5", stderr="/dev/tty5",
+                                        root=anaconda.rootPath)
+        iutil.execWithRedirect("/sbin/chkconfig",
+                                ['iptables', "off"],
+                                stdout="/dev/tty5", stderr="/dev/tty5",
+                                root=anaconda.rootPath)
+        iutil.execWithRedirect("/sbin/chkconfig",
+                                ['dhcpd', "on"],
+                                stdout="/dev/tty5", stderr="/dev/tty5",
+                                root=anaconda.rootPath)
 
     if anaconda.backend.isGroupSelected('abiquo-remote-services'):
         iutil.execWithRedirect("/sbin/chkconfig",
                                 ['redis', "on"],
                                 stdout="/dev/tty5", stderr="/dev/tty5",
                                 root=anaconda.rootPath)
+
     if anaconda.backend.isGroupSelected('cloud-in-a-box'):
         iutil.execWithRedirect("/sbin/chkconfig",
                                 ['nfs', "on"],

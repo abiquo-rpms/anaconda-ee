@@ -64,7 +64,7 @@ class AbiquoAdditionalTasks(gtk.TreeView):
     def _setupStore(self):
         self.store = gtk.ListStore(gobject.TYPE_BOOLEAN, gobject.TYPE_STRING, gobject.TYPE_STRING)
         #self.store.append([('abiquo-remote-repository' in self.anaconda.id.abiquo.selectedGroups), "Abiquo Remote Repository", 'abiquo-remote-repository'])
-        self.store.append([('abiquo-dhcp-relay' in self.anaconda.id.abiquo.selectedGroups), "Abiquo DCHP Relay", 'abiquo-dhcp-relay'])
+        self.store.append([('abiquo-dhcp-relay' in self.anaconda.id.abiquo.selectedGroups), "Abiquo DHCP Relay", 'abiquo-dhcp-relay'])
         self.store.append([('abiquo-nfs-repository' in self.anaconda.id.abiquo.selectedGroups), "Abiquo NFS Repository", 'abiquo-nfs-repository'])
         self.set_model(self.store)
 
@@ -403,7 +403,7 @@ class TaskWindow(InstallWindow):
             "Opscode Chef": "<b>Chef</b>\nInstall Chef Server/Client components",
             "Abiquo Platform": DESC_ABI_PLATFORM,
             "Storage Servers": "<b>Storage Servers</b>\nInstall required servers to manage external storage.",
-            "Additional Components": "<b>Additional Components</b>\nAbiquo Remote Repository, NFS Repository, etc.",
+            "Additional Components": "<b>Additional Components</b>\nNFS Repository, etc.",
         }
 
         self._createTaskStore()

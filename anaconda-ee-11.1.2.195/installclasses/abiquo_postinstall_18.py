@@ -72,6 +72,7 @@ def abiquoPostInstall(anaconda):
                                 root=anaconda.rootPath)
 
     if anaconda.backend.isGroupSelected('abiquo-server') or \
+        or anaconda.backend.isGroupSelected('abiquo-monolithic') or \
             anaconda.backend.isGroupSelected('cloud-in-a-box'):
                 iutil.execWithRedirect("/sbin/chkconfig",
                                         ['rabbitmq-server', "on"],

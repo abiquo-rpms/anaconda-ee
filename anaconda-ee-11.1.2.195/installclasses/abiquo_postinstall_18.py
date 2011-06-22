@@ -69,6 +69,10 @@ def abiquoPostInstall(anaconda):
                                 ['nfs', "on"],
                                 stdout="/dev/tty5", stderr="/dev/tty5",
                                 root=anaconda.rootPath)
+        iutil.execWithRedirect("/sbin/chkconfig",
+                                ['smb', "on"],
+                                stdout="/dev/tty5", stderr="/dev/tty5",
+                                root=anaconda.rootPath)
         if not os.path.exists(anaconda.rootPath + '/opt/vm_repository'):
             os.makedirs(anaconda.rootPath + '/opt/vm_repository')
         if not os.path.exists(anaconda.rootPath + '/opt/vm_repository/.abiquo_repository'):

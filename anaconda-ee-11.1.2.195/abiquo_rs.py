@@ -75,6 +75,8 @@ class AbiquoRS:
             if cifs_host:
                 f.write("abiquo.virtualfactory.hyperv.repositoryLocation = //%s/vm_repository\n" %
                         cifs_host.group(0))
+            else:
+                f.write("abiquo.virtualfactory.hyperv.repositoryLocation = //127.0.0.1/vm_repository\n")
             f.close()
 
     def writeKS(self, f):
@@ -100,6 +102,6 @@ class AbiquoRS:
         self.abiquo_virtualfactory_storagelink_password = 'storagelink'
         self.abiquo_redis_host =  '127.0.0.1'
         self.abiquo_redis_port = '6379'
-        self.abiquo_dvs_vcenter_password = ''
-        self.abiquo_dvs_vcenter_user = ''
+        self.abiquo_dvs_vcenter_password = 'change-me'
+        self.abiquo_dvs_vcenter_user = 'change-me'
         self.abiquo_dvs_enabled = 'false'

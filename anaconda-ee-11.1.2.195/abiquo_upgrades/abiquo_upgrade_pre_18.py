@@ -43,9 +43,9 @@ def abiquo_upgrade_pre(anaconda):
 
 
     # Backup kinton database
-    if os.path.isdir(db_dir):
-        os.makedirs(db_backup_dir)
-        shutil.copytree(db_dir, db_backup_dir + '/kinton')
+    #if os.path.isdir(db_dir):
+    #    os.makedirs(db_backup_dir)
+    #    shutil.copytree(db_dir, db_backup_dir + '/kinton')
 
     # Backup redis
     if os.path.exists(redis_db_file):

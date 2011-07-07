@@ -62,27 +62,29 @@ def abiquo_upgrade_post(anaconda):
 
     # Add missing 1.8 properties
     sys_props = anaconda.rootPath + '/opt/abiquo/config/abiquo.properties'
-    try:
-        config = ConfigParser.ConfigParser()
-        config.optionxform = str
-        config.read(sys_props)
-        if config.has_section('remote-services'):
-                if not config.has_option('remote-services', 'abiquo.dvs.enabled'):
-                        config.set('remote-services', 'abiquo.dvs.enabled', 'false')
-                if not config.has_option('remote-services', 'abiquo.dvs.vcenter.user'):
-                        config.set('remote-services', 'abiquo.dvs.vcenter.user', 'changeme')
-                if not config.has_option('remote-services', 'abiquo.dvs.vcenter.password'):
-                        config.set('remote-services', 'abiquo.dvs.vcenter.password', 'changeme')
+    if os.path.exists(sys_props):
+        log.info('ABIINSTALLENT: Updating system properties')
+        try:
+            config = ConfigParser.ConfigParser()
+            config.optionxform = str
+            config.read(sys_props)
+            if config.has_section('remote-services'):
+                    if not config.has_option('remote-services', 'abiquo.dvs.enabled'):
+                            config.set('remote-services', 'abiquo.dvs.enabled', 'false')
+                    if not config.has_option('remote-services', 'abiquo.dvs.vcenter.user'):
+                            config.set('remote-services', 'abiquo.dvs.vcenter.user', 'changeme')
+                    if not config.has_option('remote-services', 'abiquo.dvs.vcenter.password'):
+                            config.set('remote-services', 'abiquo.dvs.vcenter.password', 'changeme')
 
-        if config.has_section('server'):
-                if not config.has_option('server', 'abiquo.auth.module'):
-                        config.set('server', 'abiquo.auth.module', 'abiquo')
-                if not config.has_option('server', 'abiquo.server.sessionTimeout'):
-                        config.set('server', 'abiquo.server.sessionTimeout', '60')
+            if config.has_section('server'):
+                    if not config.has_option('server', 'abiquo.auth.module'):
+                            config.set('server', 'abiquo.auth.module', 'abiquo')
+                    if not config.has_option('server', 'abiquo.server.sessionTimeout'):
+                            config.set('server', 'abiquo.server.sessionTimeout', '60')
 
 
-        shutil.copyfile(sys_props, sys_props + '.before_18_update')
-        ini_config = open(sys_props, 'w')
-        config.write(ini_config)
-    except Exception, e:
-        log.error('ABIINSTALLENT: Exception writing new system properties %s' % e)
+            shutil.copyfile(sys_props, sys_props + '.before_18_update')
+            ini_config = open(sys_props, 'w')
+            config.write(ini_config)
+        except Exception, e:
+            log.error('ABIINSTALLENT: Exception writing new system properties %s' % e)

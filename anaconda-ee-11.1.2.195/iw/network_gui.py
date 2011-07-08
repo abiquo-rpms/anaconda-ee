@@ -184,14 +184,12 @@ class NetworkWindow(InstallWindow):
     def handleDHCPWarning(self):
         if network.anyUsingDHCP(self.devices, self.anaconda):
             if 'cloud-in-a-box' in self.id.abiquo.selectedGroups:
-                if not self.intf.messageWindow(_("DHCP Not Recommended"), _('Cloud in a Box needs a fixed IP address to function properly. Continue anyway?\n\n<i>See "How to configure Cloud in a Box IP addresses" on\nhttp://wiki.abiquo.com</i>'),
+                if not self.intf.messageWindow(_("DHCP Configuration"), _('Abiquo recommends that the Cloud in a Box server is configured with a fixed IP address but DHCP can also be used.\nIf you select DHCP, please ensure that you follow the post-install instructions.\n\n<i>For details, see "How to configure Cloud in a Box IP addresses" on http://wiki.abiquo.com</i>'),
                         type="custom", custom_buttons=["gtk-cancel", _("C_ontinue")]):
                     raise gui.StayOnScreen
             else:
-                if not self.intf.messageWindow(_("DHCP Not Recommended"), _("Using DHCP in Abiquo is not recommended because IP address changes will cause problems. Continue anyway?"), type="custom", custom_buttons=["gtk-cancel", _("C_ontinue")]):
+                if not self.intf.messageWindow(_("DHCP Configuration"), _("Abiquo recommends that the server is configured with a fixed IP address but DHCP can also be used.\nIf you select DHCP, please ensure that you follow the post-install instructions."), type="custom", custom_buttons=["gtk-cancel", _("C_ontinue")]):
                     raise gui.StayOnScreen
-                
-
 
     
     def editDevice(self, data):

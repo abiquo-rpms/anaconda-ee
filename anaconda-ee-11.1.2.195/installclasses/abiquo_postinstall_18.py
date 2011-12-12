@@ -10,6 +10,56 @@ log = logging.getLogger("anaconda")
 def abiquoPostInstall(anaconda):
     log.info("Abiquo 1.8 post")
 
+    if os.path.exists(anaconda.rootPath + '/opt/abiquo/tomcat/webapps/server'):
+	# Write motd init script
+	f = open(anaconda.rootPath + "/etc/rc.d/init.d/motd", "w")
+	f.write("""
+#!/bin/sh
+#
+# motd	Prepares /etc/motd file
+#
+# chkconfig: 2345 99 05
+# description: Prepares /etc/motd file
+#
+### BEGIN INIT INFO
+# Provides: motd
+# Default-Start: 2345
+# Default-Stop: 0 1 6
+# Short-Description: Prepares /etc/motd file
+# Description: Prepares /etc/motd file
+### END INIT INFO
+
+HOSTNAME=`/bin/uname -a | awk '{print $2}'`
+IP_ADDRESS=`ip addr list |grep eth | grep "inet " | cut -d' ' -f6 | cut -d/ -f1`
+
+echo -e "\nAbiquo Server\n\nHostname: $HOSTNAME" > /etc/motd
+cat /etc/abiquo-release >> /etc/motd
+
+echo -e "\nThe Abiquo server is now running. You can login from a Web browser at:" >> /etc/motd
+
+for ip in $IP_ADDRESS; do
+	echo -e "http://$ip" >> /etc/motd
+done
+echo >> /etc/motd
+
+exit 0
+""")
+	f.close()
+        # Enable MOTD
+	iutil.execWithRedirect("/bin/chmod",
+                                ['a+x', "/etc/rc.d/init.d/motd"],
+                                stdout="/dev/tty5", stderr="/dev/tty5",
+                                root=anaconda.rootPath)
+	iutil.execWithRedirect("/sbin/chkconfig",
+                                ['--add', "motd"],
+                                stdout="/dev/tty5", stderr="/dev/tty5",
+                                root=anaconda.rootPath)
+	iutil.execWithRedirect("/sbin/chkconfig",
+                                ['motd', "on"],
+                                stdout="/dev/tty5", stderr="/dev/tty5",
+                                root=anaconda.rootPath)
+
+
     # loopback up
     iutil.execWithRedirect("/sbin/ifconfig",
                             ['lo', 'up'],

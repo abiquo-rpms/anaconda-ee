@@ -87,6 +87,7 @@ installSteps = [
     ("network", ),
     ("timezone", ),
     ("accounts", ),
+    ("abiquo_password", ),
     ("reposetup", doRepoSetup, ),
     ("basepkgsel", doBasePackageSelect, ),
     ("tasksel", ),

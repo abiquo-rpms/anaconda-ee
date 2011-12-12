@@ -1,2 +1,5 @@
 rpms/*
+anaconda-ee-11.1.2.195.tar.bz2
 sources/*
+*.py~
+*.swp

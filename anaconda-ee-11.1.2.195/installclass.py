@@ -145,6 +145,7 @@ class BaseInstallClass:
 		 "network",
 		 "timezone",
 		 "accounts",
+		 "abiquo_password",
                  "reposetup",
                  "basepkgsel",
 		 "tasksel",                                  

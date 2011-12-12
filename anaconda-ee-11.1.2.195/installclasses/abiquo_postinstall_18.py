@@ -102,14 +102,23 @@ def abiquoPostInstall(anaconda):
                                         stdout="/dev/tty5", stderr="/dev/tty5",
                                         root=anaconda.rootPath)
                 
-                # create the schema
                 schema = open(anaconda.rootPath + "/usr/share/doc/abiquo-server/database/kinton-schema.sql")
+		# replace default password
+		newschema = open(anaconda.rootPath + "/tmp/kinton-schema.sql", 'w')
+		for line in schema.readlines():
+			newschema.write(re.sub('c69a39bd64ffb77ea7ee3369dce742f3', anaconda.id.abiquoPasswordHex, line))
+			newschema.write("\n")	
+		newschema.close()
+			
+                # create the schema
+		newschema = open(anaconda.rootPath + "/tmp/kinton-schema.sql")
                 iutil.execWithRedirect("/usr/bin/mysql",
                                         [],
-                                        stdin=schema,
+                                        stdin=newschema,
                                         stdout="/mnt/sysimage/var/log/abiquo-postinst.log", stderr="//mnt/sysimage/var/log/abiquo-postinst.log",
                                         root=anaconda.rootPath)
                 schema.close()
+		newschema.close()
 
                 # setup db credentials
                 iutil.execWithRedirect("/usr/bin/abicli",

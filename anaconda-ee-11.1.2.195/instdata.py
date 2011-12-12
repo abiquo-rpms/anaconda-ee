@@ -64,6 +64,8 @@ class InstallData:
         self.abiquo_rs = abiquo_rs.AbiquoRS()
         self.users = None
         self.rootPassword = { "isCrypted": False, "password": "" }
+        self.abiquoPassword = "xabiquo"
+        self.abiquoPasswordHex = "c69a39bd64ffb77ea7ee3369dce742f3"
         self.auth = "--enableshadow --enablemd5"
         self.desktop = desktop.Desktop()
         self.upgrade = None

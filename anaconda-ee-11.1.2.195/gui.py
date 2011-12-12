@@ -71,6 +71,7 @@ stepToClass = {
     "network" : ("network_gui", "NetworkWindow"),
     "timezone" : ("timezone_gui", "TimezoneWindow"),
     "accounts" : ("account_gui", "AccountWindow"),
+    "abiquo_password" : ("abiquo_password_gui", "AbiquoPasswordWindow"),
     "abiquo_install_type": ("abiquo_install_type_gui", "AbiquoInstallTypeWindow"),    
     "tasksel": ("task_gui", "TaskWindow"),    
     "group-selection": ("package_gui", "GroupSelectionWindow"),

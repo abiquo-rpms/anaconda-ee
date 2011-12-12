@@ -644,6 +644,11 @@ class InstallInterface:
         return True
 
     def run(self, anaconda):
+        # FIXME
+        # NEED TO IMPLEMENT THIS IN TEXT UI
+        anaconda.dispatch.skipStep("abiquo_install_type", 1)
+        anaconda.dispatch.skipStep("abiquo_distributed", 1)
+
         instLang = anaconda.id.instLanguage
 
         if instLang.getFontFile(instLang.getCurrent()) == "none":

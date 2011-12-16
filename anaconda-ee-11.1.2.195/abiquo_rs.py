@@ -70,6 +70,8 @@ class AbiquoRS:
                     self.abiquo_dvs_vcenter_user)
             f.write("abiquo.dvs.vcenter.password = %s\n" %
                     self.abiquo_dvs_vcenter_password)
+            f.write("abiquo.datacenter.id = %s\n" %
+                    self.abiquo_datacenter_id)
             # CIFS repo is special...
             cifs_host = re.search("(\d{1,3}\.){3}\d{1,3}", self.abiquo_nfs_repository)
             if cifs_host:

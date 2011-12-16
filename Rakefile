@@ -16,6 +16,7 @@ task :updateimg do
     FileUtils.cp f, '/mnt/'
   end
   FileUtils.cp_r 'anaconda-ee-11.1.2.195/abiquo_upgrades', '/mnt'
+  `sudo sync`
   `sudo umount /mnt/`
-  `scp /tmp/updates.img root@mirror:/mirror/`
+  `scp /tmp/updates.img root@mirror:/mirror/updates-dev.img`
 end

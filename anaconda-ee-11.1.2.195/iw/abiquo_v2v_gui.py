@@ -28,7 +28,24 @@ log = logging.getLogger("anaconda")
 class AbiquoV2VWindow(InstallWindow):
     def getNext(self):
         self.data.abiquo_rs.abiquo_nfs_repository = \
-                self.xml.get_widget('abiquo_nfs_repository').get_text()
+        self.xml.get_widget('abiquo_nfs_repository').get_text()
+        self.data.abiquo_rs.abiquo_datacenter_id = self.xml.get_widget('datacenterId').get_text()
+    
+    def helpButtonClicked(self, data):
+        log.info("helpButtonClicked")
+        msg = (
+        "<b>NFS Repository</b>\n"
+        "The NFS URI where the Abiquo NFS repository is located\n"
+        "i.e.\n"
+        "my-nfs-server-ip:/opt/vm_repository\n"
+        "\n"
+        "<b>Datacenter ID</b>\n"
+        "A unique identifier for this datacenter.\n"
+        "If you are installing Remote Services in a separate server,\n"
+        "make sure you use the same Datacenter ID when installing Remote Services.\n"
+        "\n"
+        )
+        self.intf.messageWindow(_("<b>V2V Services Settings</b>"), msg, type="ok")
 
     def getScreen (self, anaconda):
         self.intf = anaconda.intf
@@ -39,4 +56,7 @@ class AbiquoV2VWindow(InstallWindow):
 
         (self.xml, vbox) = gui.getGladeWidget("abiquo_v2v.glade", "settingsBox")
         self.xml.get_widget('abiquo_nfs_repository').set_text(self.data.abiquo_rs.abiquo_nfs_repository)
+        self.xml.get_widget('datacenterId').set_text(self.data.abiquo_rs.abiquo_datacenter_id)
+        self.helpButton = self.xml.get_widget("helpButton")
+        self.helpButton.connect("clicked", self.helpButtonClicked)
         return vbox

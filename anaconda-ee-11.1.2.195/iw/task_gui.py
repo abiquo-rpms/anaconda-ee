@@ -202,7 +202,10 @@ class AbiquoStorageTasks(AbiquoPlatformTasks):
 class TaskWindow(InstallWindow):
 
     def getNext(self):
-        log.info('Finised group selection: %s' % self.anaconda.id.abiquo.selectedGroups)
+        log.info('Finished group selection: %s' % self.anaconda.id.abiquo.selectedGroups)
+        
+        self.dispatch.skipStep("abiquo_password", skip = 1)
+
         for g in self.abiquo_groups:
             if g in self.anaconda.id.abiquo.selectedGroups:
                 map(self.backend.selectGroup, [g])
@@ -213,6 +216,10 @@ class TaskWindow(InstallWindow):
             if g not in self.anaconda.id.abiquo.selectedGroups:
                 self.dispatch.skipStep("abiquo_rs", skip = 1)
                 self.dispatch.skipStep("abiquo_v2v", skip = 1)
+        
+        for g in ['abiquo-server', 'cloud-in-a-box', 'abiquo-monolithic']:
+            if g in self.anaconda.id.abiquo.selectedGroups:
+                self.dispatch.skipStep("abiquo_password", skip = 0)
 
         if ('abiquo-monolithic' in self.anaconda.id.abiquo.selectedGroups) and \
                 ('abiquo-nfs-repository' not in self.anaconda.id.abiquo.selectedGroups):

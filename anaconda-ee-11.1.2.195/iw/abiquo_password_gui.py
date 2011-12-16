@@ -94,7 +94,7 @@ class AbiquoPasswordWindow (InstallWindow):
         #    hbox.pack_start (pix, False)
 
 	label = gtk.Label("")
-	label.set_markup("<b>Abiquo Cloud Administrator password</b>")
+	label.set_markup("<b><big>Abiquo Cloud Administrator (admin) password</big></b>")
         label.set_alignment(0.0, 0.5)
 	box.pack_start(label, False)
 
@@ -133,8 +133,9 @@ class AbiquoPasswordWindow (InstallWindow):
 # Description
 	label = gtk.Label("")
         label.set_markup(_("\nThe Cloud Administrator account is used for "
-                           "administering Abiquo.\n"
-                           "Enter a password for the <b>'admin' user</b> (default password is 'xabiquo')"))
+                           "administering Abiquo.\n\n"
+                           "<b>Default user:</b> admin\n"
+                           "<b>Default password: xabiquo"))
         label.set_line_wrap(True)
         label.set_size_request(400, -1)
         label.set_alignment(0.0, 0.5)

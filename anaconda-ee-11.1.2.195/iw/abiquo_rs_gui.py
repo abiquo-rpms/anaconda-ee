@@ -32,6 +32,8 @@ import urlparse
 class AbiquoRSWindow(InstallWindow):
     def getNext(self):
         nfsUrl = self.xml.get_widget('abiquo_nfs_repository').get_text()
+        datacenterId = self.xml.get_widget('datacenterId').get_text()
+
         if re.search('(localhost|127\.0\.0\.1)', nfsUrl):
             self.intf.messageWindow(_("<b>NFS Repository Error</b>"),
                        _("<b>127.0.0.1 or localhost detected</b>\n\n"
@@ -67,8 +69,7 @@ class AbiquoRSWindow(InstallWindow):
             socket.inet_aton(serverIP.strip())
         except socket.error:
             self.intf.messageWindow(_("<b>Abiquo Server IP Error</b>"),
-                       _("<b>Invalid IP Address</b>\n\n"
-                         "%s is not a valid IP Address" % serverIP),
+                       _("Invalid Abiquo Server IP address"),
                                 type="warning")
             raise gui.StayOnScreen
 
@@ -82,6 +83,25 @@ class AbiquoRSWindow(InstallWindow):
 
         self.data.abiquo_rs.abiquo_nfs_repository = nfsUrl
         self.data.abiquo_rs.abiquo_rabbitmq_host = serverIP
+        self.data.abiquo_rs.abiquo_datacenter_id = datacenterId
+
+    def helpButtonClicked(self, data):
+        log.info("helpButtonClicked")
+        msg = (
+        "<b>NFS Repository</b>\n"
+        "The NFS URI where the Abiquo NFS repository is located.\n"
+        "i.e.\n"
+        "my-nfs-server-ip:/opt/vm_repository\n"
+        "\n"
+        "<b>Abiquo Server IP</b>\n"
+        "Abiquo Server (management server) IP address.\n\n"
+        "<b>Datacenter ID</b>\n"
+        "A unique identifier for this datacenter.\n"
+        "If you are installing V2V services in a different server,\n"
+        "make sure you use the same Datacenter ID when installing V2V services.\n"
+        "\n"
+        )
+        self.intf.messageWindow(_("<b>Remote Services Settings</b>"), msg, type="ok")
 
     def getScreen (self, anaconda):
         self.intf = anaconda.intf
@@ -91,7 +111,10 @@ class AbiquoRSWindow(InstallWindow):
         self.data = anaconda.id
 
         (self.xml, vbox) = gui.getGladeWidget("abiquo_rs.glade", "settingsBox")
+        self.helpButton = self.xml.get_widget("helpButton")
+        self.helpButton.connect("clicked", self.helpButtonClicked)
         self.xml.get_widget('abiquo_nfs_repository').set_text(self.data.abiquo_rs.abiquo_nfs_repository)
+        self.xml.get_widget('datacenterId').set_text(self.data.abiquo_rs.abiquo_datacenter_id)
         
         server_ip = self.data.abiquo_rs.abiquo_rabbitmq_host
         if server_ip == '127.0.0.1':

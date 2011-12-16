@@ -22,6 +22,11 @@ class AbiquoDistributedWindow(InstallWindow):
         
         # remove previously selected group not present now
         map(self.backend.selectGroup, self.data.abiquo.selectedGroups)
+        
+        if ('abiquo-server' in self.anaconda.id.abiquo.selectedGroups):
+            self.dispatch.skipStep("abiquo_password", skip = 0)
+        else:
+            self.dispatch.skipStep("abiquo_password", skip = 1)
 
         if ('abiquo-remote-services' in self.anaconda.id.abiquo.selectedGroups):
             self.dispatch.skipStep("abiquo_rs", skip = 0)

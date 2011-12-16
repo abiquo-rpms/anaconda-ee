@@ -648,6 +648,7 @@ class InstallInterface:
         # NEED TO IMPLEMENT THIS IN TEXT UI
         anaconda.dispatch.skipStep("abiquo_install_type", 1)
         anaconda.dispatch.skipStep("abiquo_distributed", 1)
+        anaconda.dispatch.skipStep("abiquo_password", 1)
 
         instLang = anaconda.id.instLanguage
 

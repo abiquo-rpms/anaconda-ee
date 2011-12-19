@@ -105,12 +105,12 @@ rm -rf $DEST $DESTGR
 mkdir -p $DEST
 mkdir -p $DESTGR
 
-PACKAGES="glibc glibc-common setup openssl python newt slang libselinux
+PACKAGES="glibc glibc-common setup openssl python python-libs newt slang libselinux
 	 libsepol libtermcap zlib ash e2fsprogs util-linux raidtools popt
 	 procps rpm rpm-libs XFree86 Xconfigurator anaconda tzdata
 	 anaconda-runtime kudzu hwdata bzip2 beecrypt mdadm libsemanage
 	 bzip2-libs dosfstools pciutils reiserfs-utils parted sed
-	 busybox-anaconda rpm-python booty hdparm lvm2 beecrypt device-mapper
+	 busybox rpm-python booty hdparm lvm2 beecrypt device-mapper
 	 rhpl pyxf86config libxml2 libxml2-python glib2 sqlite neon
 	 elfutils-libelf krb5-libs convertdb1 jfsutils audit-libs pam
 	 xfsprogs xfsdump dmapi libacl libattr attr acl python-urlgrabber
@@ -122,7 +122,9 @@ PACKAGES="glibc glibc-common setup openssl python newt slang libselinux
 	 libdhcp libnl libdhcp6client libdhcp4client device-mapper-multipath
 	 kpartx dmraid python-pyblock mkinitrd libbdevid libbdevid-python
 	 libselinux-python nss udev keyutils-libs nspr python-iniparse
-	 cryptsetup-luks e4fsprogs fipscheck fipscheck-lib libdrm libmlx4"
+	 cryptsetup-luks e4fsprogs fipscheck fipscheck-lib libdrm libmlx4
+	 subscription-manager python-dmidecode python-ethtool
+	 python-rhsm python-simplejson PyXML m2crypto"
 
 if [ $ARCH = i386 -o $ARCH = x86_64 ]; then
     PACKAGES="$PACKAGES pcmciautils"
@@ -242,7 +244,7 @@ PACKAGESGR="$PACKAGESGR gail at-spi libbonobo ORBit2"
 
 # modular xorg...
 XORGLIBS="libICE libSM libX11 libXcursor libXext libXfixes libXft libXi libxkbfile libXmu libXpm libXrandr libXrender libXt libXxf86misc libXaw liblbxutil libXfont libfontenc libXau libXdmcp libXfont libXinerama"
-XORGDRIVERS="xorg-x11-drv-acecad xorg-x11-drv-aiptek xorg-x11-drv-apm xorg-x11-drv-ark xorg-x11-drv-ati xorg-x11-drv-calcomp xorg-x11-drv-chips xorg-x11-drv-cirrus xorg-x11-drv-citron xorg-x11-drv-cyrix xorg-x11-drv-digitaledge xorg-x11-drv-dmc xorg-x11-drv-dummy xorg-x11-drv-dynapro xorg-x11-drv-elo2300 xorg-x11-drv-elographics xorg-x11-drv-evdev xorg-x11-drv-fbdev xorg-x11-drv-fpit xorg-x11-drv-glint xorg-x11-drv-hyperpen xorg-x11-drv-i128 xorg-x11-drv-i740 xorg-x11-drv-i810 xorg-x11-drv-jamstudio xorg-x11-drv-joystick xorg-x11-drv-keyboard xorg-x11-drv-magellan xorg-x11-drv-magictouch xorg-x11-drv-mga xorg-x11-drv-microtouch xorg-x11-drv-mouse xorg-x11-drv-mutouch xorg-x11-drv-neomagic xorg-x11-drv-nsc xorg-x11-drv-nv xorg-x11-drv-palmax xorg-x11-drv-penmount xorg-x11-drv-rendition xorg-x11-drv-s3 xorg-x11-drv-s3virge xorg-x11-drv-savage xorg-x11-drv-siliconmotion xorg-x11-drv-sis xorg-x11-drv-sisusb xorg-x11-drv-spaceorb xorg-x11-drv-summa xorg-x11-drv-tdfx xorg-x11-drv-tek4957 xorg-x11-drv-trident xorg-x11-drv-tseng xorg-x11-drv-v4l xorg-x11-drv-vesa xorg-x11-drv-vga xorg-x11-drv-via xorg-x11-drv-vmware xorg-x11-drv-void xorg-x11-drv-voodoo"
+XORGDRIVERS="xorg-x11-drv-acecad xorg-x11-drv-aiptek xorg-x11-drv-apm xorg-x11-drv-ark xorg-x11-drv-ast xorg-x11-drv-ati xorg-x11-drv-calcomp xorg-x11-drv-chips xorg-x11-drv-cirrus xorg-x11-drv-citron xorg-x11-drv-cyrix xorg-x11-drv-digitaledge xorg-x11-drv-dmc xorg-x11-drv-dummy xorg-x11-drv-dynapro xorg-x11-drv-elo2300 xorg-x11-drv-elographics xorg-x11-drv-evdev xorg-x11-drv-fbdev xorg-x11-drv-fpit xorg-x11-drv-glint xorg-x11-drv-hyperpen xorg-x11-drv-i128 xorg-x11-drv-i740 xorg-x11-drv-i810 xorg-x11-drv-jamstudio xorg-x11-drv-joystick xorg-x11-drv-keyboard xorg-x11-drv-magellan xorg-x11-drv-magictouch xorg-x11-drv-mga xorg-x11-drv-microtouch xorg-x11-drv-mouse xorg-x11-drv-mutouch xorg-x11-drv-neomagic xorg-x11-drv-nsc xorg-x11-drv-nv xorg-x11-drv-palmax xorg-x11-drv-penmount xorg-x11-drv-qxl xorg-x11-drv-rendition xorg-x11-drv-s3 xorg-x11-drv-s3virge xorg-x11-drv-savage xorg-x11-drv-siliconmotion xorg-x11-drv-sis xorg-x11-drv-sisusb xorg-x11-drv-spaceorb xorg-x11-drv-summa xorg-x11-drv-tdfx xorg-x11-drv-tek4957 xorg-x11-drv-trident xorg-x11-drv-tseng xorg-x11-drv-v4l xorg-x11-drv-vesa xorg-x11-drv-vga xorg-x11-drv-via xorg-x11-drv-vmware xorg-x11-drv-void xorg-x11-drv-voodoo"
 XORGFONTS="xorg-x11-fonts-75dpi xorg-x11-fonts-base xorg-x11-fonts-cyrillic xorg-x11-fonts-ISO8859-15-75dpi xorg-x11-fonts-ISO8859-1-75dpi xorg-x11-fonts-ISO8859-2-75dpi xorg-x11-fonts-ISO8859-9-75dpi xorg-x11-fonts-misc xorg-x11-fonts-ethiopic"
 XORG="$XORGLIBS $XORGDRIVERS $XORGFONTS xorg-x11-server-Xorg xorg-x11-xauth xorg-x11-font-utils xorg-x11-xkb-utils xorg-x11-xkbdata xorg-x11-server-utils xkeyboard-config"
 
@@ -333,7 +335,7 @@ sbin/kpartx.static
 sbin/mpath_prio_*.static
 lib/udev/scsi_id
 sbin/badblocks
-sbin/busybox.anaconda
+sbin/busybox
 sbin/clock
 sbin/cryptsetup
 sbin/debugfs
@@ -377,6 +379,7 @@ sbin/reiserfstune
 sbin/resize2fs
 sbin/sfdisk
 sbin/tune2fs
+sbin/tune4fs
 sbin/xfsdump
 sbin/xfsrestore
 sbin/xfs_repair
@@ -443,6 +446,7 @@ usr/$LIBDIR/libuser.so*
 usr/$LIBDIR/libuser/*
 usr/$LIBDIR/libxml2.so*
 usr/$LIBDIR/libz.*
+$LIBDIR/libz.*
 usr/$LIBDIR/libreadline*
 usr/$LIBDIR/python?.?/*
 usr/$LIBDIR/libfreebl3.so
@@ -479,6 +483,7 @@ usr/lib/python?.?/site-packages/pirut/*
 usr/lib/python?.?/site-packages/pykickstart/*
 usr/lib/python?.?/site-packages/rhpxl/*
 usr/lib/python?.?/site-packages/instnum.*
+usr/lib/python?.?/site-packages/*rhsm*
 usr/lib/rpm/macros
 usr/lib/rpm/rpmpopt
 usr/lib/rpm/rpmrc
@@ -519,6 +524,11 @@ usr/share/hwdata/MonitorsDB
 usr/share/xorg/extramodes
 usr/share/xorg/vesamodes
 usr/share/zoneinfo/*
+usr/share/rhsm/*
+usr/lib/yum-plugins/product-id.py*
+var/log/rhsm
+etc/rhsm/*
+etc/yum/pluginconf.d/product-id.conf
 EOF
 
 if [ $ARCH = s390 -o $ARCH = s390x ]; then
@@ -543,7 +553,7 @@ usr/sbin/in.telnetd
 usr/sbin/xinetd
 sbin/cmsfslst
 sbin/cmsfscat
-sbin/busybox.anaconda
+sbin/busybox
 sbin/ifconfig
 sbin/route
 sbin/portmap
@@ -666,6 +676,7 @@ sbin/fsck.reiserfs
 sbin/parted
 sbin/silo
 sbin/tune2fs
+sbin/tune4fs
 usr/bin/Xorg
 usr/bin/setxkbmap
 usr/bin/xkbcomp
@@ -1148,7 +1159,7 @@ ModuleFiles=/etc/pango/pango.modules
 EOF
 fi
 
-host=`rpm --nodigest --nosignature -qp --qf "%{POSTIN}\n" $PACKAGEDIR/gtk2*.$ARCH.rpm |grep update-gdk-pixbuf |awk {'print $2;'}`
+host=`rpm --nodigest --nosignature -qp --qf "%{POSTIN}\n" $PACKAGEDIR/gtk2*.$ARCH.rpm |grep update-gdk-pixbuf |awk {'print $3;'}`
 
 case "$host" in
   *linux) canonhost="$host-gnu"
@@ -1326,7 +1337,6 @@ find $DESTGR -type f -name '*.so' |xargs strip -g
 # some python stuff we don't need for stage2
 rm -rf $DESTGR/usr/$LIBDIR/python?.?/site-packages/distutils/
 rm -rf $DESTGR/usr/$LIBDIR/python?.?/site-packages/lib-dynload/japanese
-rm -rf $DESTGR/usr/$LIBDIR/python?.?/site-packages/encodings/
 rm -rf $DESTGR/usr/$LIBDIR/python?.?/site-packages/compiler/
 rm -rf $DESTGR/usr/$LIBDIR/python?.?/site-packages/email/test/
 rm -rf $DESTGR/usr/$LIBDIR/python?.?/site-packages/curses/

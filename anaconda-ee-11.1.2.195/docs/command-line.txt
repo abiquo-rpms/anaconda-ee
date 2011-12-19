@@ -1,4 +1,4 @@
-8-15-2005
+07-15-2010
 ---------
 
 Boot time command args:
@@ -27,6 +27,14 @@ askmethod       Do not automatically use the CD-ROM as the install
 
 nousbstorage	Do not load usbstorage module in loader.  May help with
 		device ordering on SCSI systems.
+
+driverload      Load a driver module before loading other modules. Multiple
+                occurrences are allowed.
+
+blacklist       Prevent loading of a driver module during install and
+                subsequent reboots by writing a blacklist file to
+                /etc/modprobe.d/anaconda.conf
+                Multiple occurrences are allowed.
 
 noparport       Do not attempt to load support for parallel ports
 
@@ -145,7 +153,8 @@ dns=<dns>	Comma separated list of nameservers to use for a network
 dhcptimeout=<sec> Set different dhcp timeout to workaround STP delays
                   with some Cisco switches
 
-method=nfs:<path> Use <path> for an NFS installation.
+method=nfs(:options):<path> Use <path> for an NFS installation. NFS mount 
+                options are optional.
 
 method=http://<path> Use <path> for an HTTP installation
 
@@ -180,3 +189,7 @@ ipv6=<method>   IPv6 configuration method to use, either 'auto' for
                 automatic neighbor discovery or 'dhcp' for DHCPv6.
 
 noipv6          Disable IPv6 networking during installation.
+
+noeject         Do not eject install media under any circumstances, including
+                media test and shutdown.
+

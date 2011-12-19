@@ -212,9 +212,9 @@ class Partitions:
                 if lvvg != vg:
                     continue
 
-                theDev = "/dev/mapper/%s-%s" %(vg, lv)
+                theDev = "/dev/%s" % partedUtils.dmNodeNameOfLV(vg, lv)
                 if cryptodev.isLuks(theDev):
-                    self.getCryptoDev("mapper/%s-%s" % (vg, lv), intf)
+                    self.getCryptoDev(partedUtils.dmNodeNameOfLV(vg, lv), intf)
 
         lvm.vgdeactivate()
         diskset.stopMdRaid()
@@ -1253,7 +1253,8 @@ class Partitions:
             mem = mem + (16384 - rem)
         mem = mem / 1024
 
-        if foundSwap and (swapSize < (mem - 8)) and (mem < 1024):
+        if foundSwap and rhpl.getArch() != "s390" and \
+           (swapSize < (mem - 8)) and (mem < 1024):
             warnings.append(_("You have allocated less swap space (%dM) than "
                               "available RAM (%dM) on your system.  This "
                               "could negatively impact performance.")
@@ -1661,11 +1662,14 @@ class Partitions:
             if request.encryption.addPassphrase(self.encryptionPassphrase):
                 log.error("failed to add new passphrase to existing device %s" % (request.encryption.getDevice(encrypted=1),))
 
-    def deleteDependentRequests(self, request):
+    def deleteDependentRequests(self, request, justRemove = False):
         """Handle deletion of this request and all requests which depend on it.
 
         eg, delete all logical volumes from a volume group, all volume groups
         which depend on the raid device.
+
+        justRemove - only remove requests, do not create respective delete requests
+                     in self.deletes
 
         Side effects: removes all dependent requests from self.requests
                       adds needed dependent deletes to self.deletes
@@ -1681,7 +1685,7 @@ class Partitions:
             elif isinstance(req, partRequests.VolumeGroupRequestSpec):
                 if id in req.physicalVolumes:
                     toRemove.append(req)
-                    if req.getPreExisting():
+                    if req.getPreExisting() and not justRemove:
                         delete = partRequests.DeleteVolumeGroupSpec(req.volumeGroupName)
                         self.addDelete(delete)
             elif isinstance(req, partRequests.LogicalVolumeRequestSpec):
@@ -1695,7 +1699,7 @@ class Partitions:
                     else:
                         vgname = tmp.volumeGroupName
 
-                    if req.getPreExisting():
+                    if req.getPreExisting() and not justRemove:
                         delete = partRequests.DeleteLogicalVolumeSpec(req.logicalVolumeName,
                                                                       vgname)
                         self.addDelete(delete)

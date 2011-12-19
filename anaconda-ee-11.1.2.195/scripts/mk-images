@@ -47,9 +47,10 @@ LVMMODS="dm-mod dm-zero dm-snapshot dm-mirror dm-multipath dm-round-robin dm-emc
 RAIDMODS="md raid0 raid1 raid10 raid5 raid6 raid456 dm-raid45 dm-mem-cache dm-region_hash dm-message"
 SECSTAGE="$RAIDMODS $LVMMODS $FSMODS $IDEMODS $SCSIMODS"
 BTERMMODS="vga16fb"
-CRYPTOMODS="sha256 aes_generic"
+CRYPTOMODS="aead aes_generic ansi_cprng anubis arc4 authenc blowfish cast5 cast6 cbc ccm chainiv crypto_algapi crypto_api crypto_blkcipher crypto_hash crypto_null cryptomgr ctr deflate des ecb eseqiv gf128mul hmac khazad krng md4 md5 michael_mic rng seqiv serpent sha256 sha512 tcrypt tea tgr192 twofish wp512 xcbc xts"
 PCMCIASOCKMODS="yenta_socket i82365 tcic pcmcia"
-INITRDMODS="$USBMODS $FIREWIREMODS $IDEMODS $SCSIMODS $FSMODS $LVMMODS $RAIDMODS $CRYPTOMODS $BTERMMODS $COMMONMODS $PCMCIASOCKMODS =scsi =net"
+INFINIBANDMODS="ib_ipoib"
+INITRDMODS="$USBMODS $FIREWIREMODS $IDEMODS $SCSIMODS $FSMODS $LVMMODS $RAIDMODS $CRYPTOMODS $BTERMMODS $COMMONMODS $PCMCIASOCKMODS $INFINIBANDMODS =scsi =net"
 
 # Set, verify, and create paths
     KERNELPATH=$1
@@ -448,25 +449,7 @@ EOF
     cp -f $IMGPATH/usr/sbin/sshd $MBD_DIR/sbin/sshd
     cp -f $IMGPATH/usr/sbin/xinetd $MBD_DIR/sbin/xinetd
     cp -f $IMGPATH/usr/sbin/in.telnetd $MBD_DIR/sbin/in.telnetd
-    cp -f $IMGPATH/usr/bin/bash $MBD_DIR/sbin/bash
     cp -f $IMGPATH/usr/bin/ipcalc $MBD_DIR/sbin/ipcalc
-    cp -f $IMGPATH/usr/bin/busybox $MBD_DIR/sbin/busybox
-
-    # make some symlinks
-    ln -sf bash $MBD_DIR/sbin/sh
-    (cd $MBD_DIR/sbin;
-    	set $(./busybox 2>&1| awk '/^\t([[:alnum:]_\.\[]+,)+/' | sed 's/,//g' | sed 's/ +//');
-    	while [ -n "$1" ]; do
-    	      if [ $1 != "busybox" -a $1 != "sh" ]; then
-              	 # if file doesnt already exist, link to busybox
-		   if [ ! -f "$1" ]; then
-	    	      ln -sf ./busybox $1
-		   else
-		      [ -n "$DEBUG" ] && echo "Overriding busybox version of $1"
-		   fi
-    	      fi
-    	      shift
-	 done )
 
     # and copy libraries too
     mkdir -p $MBD_DIR/$LIBDIR $MBD_DIR/lib
@@ -499,7 +482,7 @@ EOF
 	       $IMGPATH/$LIBDIR/libresolv-*.so* \
 	       $IMGPATH/$LIBDIR/libm.so* \
 	       $IMGPATH/$LIBDIR/libm-*.so* \
-	       $IMGPATH/usr/$LIBDIR/libz.so* \
+	       $IMGPATH/$LIBDIR/libz.so* \
 	       $IMGPATH/$LIBDIR/libssl* \
 	       $IMGPATH/$LIBDIR/libcom_err* \
 	       $IMGPATH/$LIBDIR/libe2p* \
@@ -530,6 +513,26 @@ EOF
 	       $IMGPATH/usr/$LIBDIR/libcom_err.so* ; do
 	if [ -e $lib ]; then cp -df $lib $MBD_DIR/usr/$LIBDIR/ ; fi
     done 
+}
+
+addBusyBox() {
+    cp -f $IMGPATH/usr/bin/bash $MBD_DIR/sbin/bash
+    cp -f $IMGPATH/usr/bin/busybox $MBD_DIR/sbin/busybox
+
+    # make some symlinks
+    ln -sf bash $MBD_DIR/sbin/sh
+    (cd $MBD_DIR/sbin;
+      set $(./busybox 2>&1 | awk '/^\t([[:alnum:]_\.\[]+,)+/' | sed 's/,//g' | sed 's/ +//');
+      while [ -n "$1" ]; do
+        if [ $1 != "busybox" -a $1 != "sh" ]; then
+          if [ ! -f "$1" ]; then
+            ln -sf ./busybox $1
+          else
+            [ -n "$DEBUG" ] && echo "Overriding busybox version of $1"
+          fi
+        fi
+        shift
+      done)
 }
 
 makeinitrd() {
@@ -675,6 +678,8 @@ EOF
     if [ "$BUILDARCH" = "s390" -o "$BUILDARCH" = "s390x" ]; then
 	setupShellEnvironment
     fi
+
+    addBusyBox
 
 cat > $MBD_DIR/.profile <<EOF
 PATH=/bin:/usr/bin:/usr/sbin:/mnt/sysimage/sbin:/mnt/sysimage/usr/sbin:/mnt/sysimage/bin:/mnt/sysimage/usr/bin

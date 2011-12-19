@@ -108,8 +108,11 @@ static char * mediaCheckCdrom(char *cddriver) {
                 free(descr);
         }
 
-        ejectCdrom();
-	
+        if (!FL_NOEJECT(flags))
+            ejectCdrom();
+        else
+            logMessage(INFO, "noeject in effect, not ejecting cdrom");
+
         rc = newtWinChoice(_("Media Check"), _("Test"), _("Continue"),
                        _("If you would like to test additional media, "
                        "insert the next CD and press \"%s\". "
@@ -121,7 +124,10 @@ static char * mediaCheckCdrom(char *cddriver) {
                        _("Test"), _("Continue"));
 
         if (rc == 2) {
-            unlink("/tmp/cdrom");
+            if (!FL_NOEJECT(flags))
+                unlink("/tmp/cdrom");
+            else
+                logMessage(INFO, "noeject in effect, not unmounting /tmp/cdrom");
             return NULL;
         } else {
             continue;
@@ -156,7 +162,10 @@ static void mountCdromStage2(char *cddev) {
         do {
             if (doPwMount("/tmp/cdrom", "/mnt/source", 
                           "iso9660", IMOUNT_RDONLY, NULL)) {
-                ejectCdrom();
+                if (!FL_NOEJECT(flags))
+                    ejectCdrom();
+                else
+                    logMessage(INFO, "noeject in effect, not ejecting cdrom");
                 wrongCDMessage();
             } else {
                 break;
@@ -168,7 +177,10 @@ static void mountCdromStage2(char *cddev) {
         /* if we failed, umount /mnt/source and keep going */
         if (rc) {
             umount("/mnt/source");
-            ejectCdrom();
+            if (!FL_NOEJECT(flags))
+                ejectCdrom();
+            else
+                logMessage(INFO, "noeject in effect, not ejecting cdrom");
             wrongCDMessage();
         } else {
             gotcd1 = 1;
@@ -386,8 +398,12 @@ char * setupCdrom(char * location, struct loaderData_s * loaderData,
                                    "and press %s to retry."), getProductName(),
                                  getProductName(), _("OK"));
 
-            ejectCdrom();
-            unlink("/tmp/cdrom");
+            if (!FL_NOEJECT(flags)) {
+                ejectCdrom();
+                unlink("/tmp/cdrom");
+            } else {
+                logMessage(INFO, "noeject in effect, not ejecting cdrom");
+            }
             rc = newtWinChoice(_("CD Not Found"),
                                _("OK"), _("Back"), buf, _("OK"));
             free(buf);
@@ -427,13 +443,30 @@ void setKickstartCD(struct loaderData_s * loaderData, int argc, char ** argv) {
 }
 
 int kickstartFromCD(char *kssrc) {
-    int rc, i;
+    int rc, i, j, found = 0;
     char *p, *kspath;
     struct device ** devices;
 
     logMessage(INFO, "getting kickstart file from first CDROM");
 
-    devices = probeDevices(CLASS_CDROM, BUS_UNSPEC, 0);
+    /* usb can take some time to settle, even with the various hacks we
+     * have in place.  some systems use portable USB CD-ROM drives, try to
+     * make sure there really isn't one before bailing */
+    for (i = 0; i < 10; ++i) {
+        devices = probeDevices(CLASS_CDROM, BUS_UNSPEC, 0);
+
+        for (j = 0; devices && devices[j]; ++j) {
+            if (devices[j]->device)
+                found = 1;
+        }
+        if (found)
+            break;
+        else {
+            logMessage(DEBUGLVL, "sleeping to wait for a USB CD-ROM");
+            sleep(2);
+        }
+    }
+
     if (!devices) {
         logMessage(ERROR, "No CDROM devices found!");
         return 1;

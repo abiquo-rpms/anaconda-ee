@@ -408,7 +408,7 @@ def createSuggestedVGName(partitions):
     """
     i = 0
     while 1:
-        tmpname = "VolGroup%02d" % (i,)
+	tmpname = "VolGroup%02d" % (i,)
 	if not partitions.isVolumeGroupNameInUse(tmpname):
 	    break
 

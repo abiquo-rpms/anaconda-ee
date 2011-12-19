@@ -207,6 +207,12 @@ Creating the Kickstart File
             Upgrade the existing boot loader configuration, preserving the
             old entries. This option is only available for upgrades.
 
+       --hvargs
+            If using GRUB, specifies xen hypervisor arguments. To specify
+            multiple parameters, separate them with spaces. For example:
+
+            bootloader --hvargs="dom0_mem=2G dom0_max_vcpus=4"
+
    clearpart (optional)
 
        Removes partitions from the system, prior to creation of new
@@ -455,12 +461,19 @@ Creating the Kickstart File
 
    ignoredisk (optional)
 
-       Used to specify disks that anaconda should not touch when
-       partitioning, formatting, and clearing.  This command has a single
-       required argument, which takes a comma-separated list of drive
-       names to ignore.
+       Controls anaconda's access to disks attached to the system.  Only
+       one of the following options may be used.  Both take a comma-separated
+       list of drive names.
 
        ignoredisk --drives=[disk1,disk2,...]
+
+            Specifies those disks that anaconda should not touch when
+            partitioning, formatting, and clearing.
+
+       ignoredisk --only-use=[disk1,disk2,...]
+
+            Specifies the opposite - only disks listed here will be used
+            during installation.
 
    interactive (optional)
 
@@ -473,17 +486,60 @@ Creating the Kickstart File
 
    iscsi (optional)
 
-        iscsi --ipaddr= [options]
+       Specifies additional iSCSI storage to be attached during
+       installation. If you use the iscsi parameter, you must also
+       assign a name to the iSCSI node, using the iscsiname parameter.
+       The iscsiname parameter must appear before the iscsi
+       parameter in the kickstart file.
 
-       --target=
+       iscsi --ipaddr=<addr> [other-options]
+
+       We recommend that wherever possible you configure iSCSI storage in
+       the system BIOS or firmware (iBFT for Intel systems) rather than use
+       the iscsi parameter. *Anaconda* automatically detects and uses
+       disks configured in BIOS or firmware and no special configuration is
+       necessary in the kickstart file.
+
+       If you must use the iscsi parameter, ensure that networking is
+       activated at the beginning of the installation, and that the
+       iscsi parameter appears in the kickstart file before you refer
+       to iSCSI disks with parameters such as clearpart or ignoredisk.
+
+       --ipaddr= (mandatory)
+
+            The IP address of the target to connect to.
 
        --port=
 
+            The port number to connect to (default, --port=3260).
+
        --user=
+
+            The username required to authenticate with the target.
 
        --password=
 
+            The password that corresponds with the username specified for
+            the target.
+
+       --reverse-user=
+
+            The username required to authenticate with the initiator from
+            a target that uses reverse CHAP authentication.
+
+       --reverse-password=
+
+            The password that corresponds with the username specified for
+            the initiator.
+
    iscsiname (optional)
+
+       Assigns a name to an iSCSI node specified by the iscsi parameter. If
+       you use the iscsi parameter in your kickstart file, this
+       parameter is mandatory, and you must specify iscsiname in the
+       kickstart file before you specify iscsi.
+
+       iscsiname <iqn>
 
    key (optional)
 
@@ -1674,13 +1730,13 @@ Making the Kickstart File Available on the Network
 
    Other options to start a kickstart installation are as follows:
 
-   ks=nfs:<server>:/<path>
+   ks=nfs(:options):<server>:/<path>
 
-       The installation program will look for the kickstart file on the
-       NFS server <server>, as file <path>. The installation program will
-       use DHCP to configure the Ethernet card. For example, if your NFS
-       server is server.example.com and the kickstart file is in the NFS
-       share /mydir/ks.cfg, the correct boot command would be
+       The installation program will look for the kickstart file on the NFS
+       server <server>, as file <path>. The (:options) part is optional. The
+       installation program will use DHCP to configure the Ethernet card. For
+       example, if your NFS server is server.example.com and the kickstart file
+       is in the NFS share /mydir/ks.cfg, the correct boot command would be
        ks=nfs:server.example.com:/mydir/ks.cfg.
 
    ks=http://<server>/<path>

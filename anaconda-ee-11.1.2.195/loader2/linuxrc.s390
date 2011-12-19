@@ -52,6 +52,10 @@ unset testing
 # uncomment the following test="1" to never execute sensitive commands
 #testing="1"
 
+if [ "$RUNKS" = "0" ]; then
+    RUNKS=""
+fi
+
 # helper function to disable commands while running outside the initrd
 function tv() {
     if [ -z "$testing" ]; then
@@ -79,35 +83,13 @@ function checkipv4()
 
 function doshutdown()
 {
+    echo $"about to exec shutdown"
     exec /sbin/shutdown
     exit 0
 }
 
 function doreboot()
 {
-    # find out the location of /boot and use it to re-ipl
-    boot="$(cat /proc/mounts | grep " /mnt/sysimage/boot " | awk -F" " '{print $1}')"
-    if [ -z $boot ]; then
-        # use root if /boot not used
-        boot="$(cat /proc/mounts | grep " /mnt/sysimage " | awk -F" " '{print $1}')"
-    fi
-
-    # lookup dasd disk
-    echo $boot | grep "dasd" > /dev/null
-    if [ $? -eq 0 ]; then
-        type="ccw"
-        boot="$(basename $boot)"
-        # strip partition number from dasd device
-        boot="$(echo ${boot%[0-9]})"
-        id="$(basename $(readlink /sys/block/$boot/device))"
-        echo $type > /sys/firmware/reipl/reipl_type
-        echo $id > /sys/firmware/reipl/$type/device
-    else
-        # scsi re-ipl only supported on newer machines
-        doshutdown
-        exit 0
-    fi
-
     echo $"about to exec shutdown -r"
     exec /sbin/shutdown -r
     exit 0
@@ -1068,7 +1050,7 @@ function question_choices_nettype() {
 function helptext_nettype() {
     echo $" Help text for network type:"
     echo $"  qeth: OSA-Express Fast Ethernet, Gigabit Ethernet (including 1000Base-T),"
-    echo $"        High Speed Token Ring, and ATM (running Ethernet LAN emulation)"
+    echo $"        High Speed Token Ring, Hipersockets, and ATM (running Ethernet LAN emulation)"
     echo $"        features in QDIO mode."
     echo $"        [default]"
     echo $"  lcs:  OSA-2 Ethernet/Token Ring, OSA-Express Fast Ethernet in non-QDIO mode,"
@@ -2103,23 +2085,15 @@ function configure_ipv4_gateway() {
     fi
     # BH FIXME: Workaround for manual MACADDR, need ping to update arp table
     echo $"Trying to reach gateway $GATEWAY..."
-    if [ "$NETTYPE" = "ctc" ]; then
-        # (virtual) CTC(/A) seems to need some time to get functional
-        local i=1
-        while : ; do
-            ping -c 1 $GATEWAY >& /dev/null && break
-            i=$((i+1))
-            if [ "$i" -gt 3 ]; then
-                echo $"Could not reach gateway $GATEWAY within timeout"
-                return 1
-            fi
-        done
-    else
-        if ! ping -c 1 $GATEWAY >& /dev/null; then
+    local i=1
+    while : ; do
+        ping -c 3 $GATEWAY >& /dev/null && break
+        i=$((i+1))
+        if [ "$i" -gt 3 ]; then
             echo $"Could not reach your default gateway $GATEWAY"
             return 1
         fi
-    fi
+    done
     return 0
 }
 
@@ -2209,7 +2183,7 @@ function configure_ipv6_gateway() {
     fi
     # BH FIXME: Workaround for manual MACADDR, need ping to update arp table
     echo $"Trying to reach gateway $GATEWAY..."
-    if ! ping6 -c 1 $GATEWAY >& /dev/null; then
+    if ! ping6 -c 3 $GATEWAY >& /dev/null; then
         echo $"Could not reach your default gateway $GATEWAY"
         return 1
     fi
@@ -2340,7 +2314,7 @@ function handle_dns() {
     echo $"Trying to reach DNS servers..."
     if [ "$ipv6" ]; then
         while read dnsitem; do
-            if ! ping6 -c 1 $dnsitem >& /dev/null; then
+            if ! ping6 -c 3 $dnsitem >& /dev/null; then
                 echo $"Could not ping DNS server (might still serve DNS requests): $dnsitem"
                 allgood="no"
                 # this should not be a hard failure since some network
@@ -2354,7 +2328,7 @@ function handle_dns() {
             # reachable by ping, so it would make sense to use nslookup.
             # However, nslookup fails with "Resolver Error 0 (no error)"
             # at this stage of the setup progress => not useful
-            if ! ping -c 1 $dnsitem >& /dev/null; then
+            if ! ping -c 3 $dnsitem >& /dev/null; then
                 echo $"Could not ping DNS server: $dnsitem"
 #                if nslookup $dnsitem $dnsitem >& /dev/null; then
 #                    echo $" but could resolve DNS server with itself: $dnsitem"
@@ -3145,7 +3119,9 @@ EOF
         /sbin/loader
     fi
 
-    doreboot
+    # A shutdown needs to be performed here to avoid a loop booting back into the installer
+    echo $"Finishing up with doshutdown"
+    doshutdown
 
 fi # testing
 

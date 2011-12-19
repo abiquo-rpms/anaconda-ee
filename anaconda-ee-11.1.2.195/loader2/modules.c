@@ -246,6 +246,18 @@ int mlModuleInList(const char * modName, moduleList list) {
     return 0;
 }
 
+int mlModuleInBlacklist(const char * modName) {
+    int i;
+
+    for (i=0; i < cmdline_argc; i++) {
+        if (!strncasecmp(cmdline_argv[i], "blacklist=", 10))
+            if (!strcmp(cmdline_argv[i] + 10, modName))
+                return 1;
+    }
+
+    return 0;
+}
+
 static struct loadedModuleInfo * getLoadedModuleInfo(moduleList modLoaded, 
                                                      const char * modName) {
     int i = 0;
@@ -269,8 +281,8 @@ static int loadModule(const char * modName, struct extractedModule * path,
     int rc, child, i, status;
     static int usbWasLoaded = 0;
  
-    /* don't need to load a module that's already loaded */
-    if (mlModuleInList(modName, modLoaded))
+    /* don't need to load a module that's already loaded or blacklisted */
+    if (mlModuleInList(modName, modLoaded) || mlModuleInBlacklist(modName))
         return 0;
 
     if (modInfo && (mi = findModuleInfo(modInfo, modName))) {
@@ -323,6 +335,9 @@ static int loadModule(const char * modName, struct extractedModule * path,
 
     if (!rc) {
         int num = modLoaded->numModules;
+        if (num >= MODULES_MAXLOADED)
+            logMessage(CRITICAL, "The number of loaded modules is over the "
+                       "implementation limit.");
 
         modLoaded->mods[num].name = strdup(modName);
         modLoaded->mods[num].weLoaded = 1;
@@ -378,7 +393,6 @@ static int loadModule(const char * modName, struct extractedModule * path,
         } else {
             newArgs = NULL;
         }
-        
         modLoaded->mods[modLoaded->numModules++].args = newArgs;
     }
 
@@ -479,8 +493,8 @@ static int doLoadModules(const char * origModNames, moduleList modLoaded,
             next++;
         }
 
-        if (mlModuleInList(start, modLoaded)) {
-            /* already loaded, we don't need to load it again */
+        /* don't need to load a module that's already loaded or blacklisted */
+        if (mlModuleInList(start, modLoaded) || mlModuleInBlacklist(start)) {
             start = next;
             continue;
         }
@@ -1107,5 +1121,28 @@ void loadKickstartModule(struct loaderData_s * loaderData, int argc,
 
     mlLoadModule(module, loaderData->modLoaded, *(loaderData->modDepsPtr),
                  loaderData->modInfo, args);
+}
+
+void mlWriteBlacklist() {
+    int fd;
+    int i;
+    int ret;
+    char *buf;
+
+    /* Write out the blacklist, used by modprobe on bootup */
+    fd = open("/tmp/anaconda.conf", O_WRONLY | O_CREAT, 0644);
+    if (fd == -1) {
+        logMessage(ERROR, "error writing /tmp/anaconda.conf: %s\n",
+                    strerror(errno));
+        return;
+    }
+    for (i=0; i < cmdline_argc; i++) {
+        if (!strncasecmp(cmdline_argv[i], "blacklist=", 10)) {
+            asprintf( &buf, "blacklist %s\n", cmdline_argv[i] + 10 );
+            ret = write(fd, buf, strlen(buf));
+            free(buf);
+        }
+    }
+    close(fd);
 }
 

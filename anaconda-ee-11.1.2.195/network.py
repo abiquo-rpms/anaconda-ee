@@ -37,26 +37,23 @@ class IPError(Exception):
 class IPMissing(Exception):
     pass
 
-def inStrRange(v, s):
-    if string.find(s, v) == -1:
-	return 0
-    else:
-	return 1
-
 def sanityCheckHostname(hostname):
     if len(hostname) < 1:
 	return None
 
-    if len(hostname) > 64:
-	return _("Hostname must be 64 or less characters in length.")
-    
-    if not inStrRange(hostname[0], string.ascii_letters):
-	return _("Hostname must start with a valid character in the range "
-		 "'a-z' or 'A-Z'")
+    if len(hostname) > 255:
+	return _("Hostname must be 255 or fewer characters in length.")
+
+    validStart = string.ascii_letters + string.digits
+    validAll = validStart + ".-"
+
+    if string.find(validStart, hostname[0]) == -1:
+	return _("Hostname must start with a valid character in the ranges "
+		 "'a-z', 'A-Z', or '0-9'")
 
     for i in range(1, len(hostname)):
-	if not inStrRange(hostname[i], string.ascii_letters+string.digits+".-"):
-	    return _("Hostnames can only contain the characters 'a-z', 'A-Z', '-', or '.'")
+	if string.find(validAll, hostname[i]) == -1:
+	    return _("Hostnames can only contain the characters 'a-z', 'A-Z', '0-9', '-', or '.'")
 
     return None
 	    
@@ -152,14 +149,19 @@ class NetworkDevice(SimpleConfigFile):
             # make sure we include autoneg in the ethtool line
             elif key == 'ETHTOOL_OPTS' and self.info[key].find("autoneg")== -1:
                 s = s + key + """="autoneg off %s"\n""" % (self.info[key])
+            elif key == 'ETHTOOL_OPTS':
+                s = s + key + """="%s"\n""" % (self.info[key])
             elif self.info[key] is not None:
                 s = s + key + "=" + self.info[key] + "\n"
 
             if key == 'ONBOOT':
                 onBootWritten = 1
+                if forceOffOnBoot or self.info[key].lower() == 'no':
+                    s = s + "HOTPLUG=no\n"
 
         if not onBootWritten:
             s = s + 'ONBOOT=no\n'
+            s = s + "HOTPLUG=no\n"
 
         return s
 
@@ -215,6 +217,14 @@ class Network:
                         "OPTIONS", "ARP", "MACADDR"):
                 if info.has_key(key):
                     self.netdevices [info["DEVICE"]].set((key, info[key]))
+
+            osa_opts = []
+            for key in ("LAYER2", "PORTNO"):
+                if info.has_key(key) and info[key] == "1":
+                    osa_opts.append(key.lower() + "=" + info[key])
+
+            if osa_opts:
+                self.netdevices[info["DEVICE"]].set(("OPTIONS", " ".join(osa_opts)))
 
             self.netdevices [info["DEVICE"]].set(('useIPv4', flags.useIPv4))
             self.netdevices [info["DEVICE"]].set(('useIPv6', flags.useIPv6))
@@ -603,3 +613,12 @@ class Network:
                 f.write("nameserver %s\n" % (ns,))
 
         f.close()
+
+        # /etc/modprobe.conf
+        if useIPv6 == "no":
+            iutil.mkdirChain(instPath + "/etc")
+            f = open(instPath + "/etc/modprobe.conf", "a")
+            f.write("alias net-pf-10 off\n")
+            f.write("alias ipv6 off\n")
+            f.write("options ipv6 disable=1\n")
+            f.close()

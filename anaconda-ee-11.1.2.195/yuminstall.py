@@ -17,6 +17,7 @@ import os.path
 import shutil
 import timer
 import warnings
+import time
 import types
 import glob
 import re
@@ -465,6 +466,10 @@ class YumSorter(yum.YumBase):
                 if self.tsInfo.exists(dep.pkgtup):
                     pkgs = self.tsInfo.getMembers(pkgtup=dep.pkgtup)
                     member = self.bestPackagesFromList(pkgs)[0]
+                elif self.rpmdb.installed(name = dep.name, arch = dep.arch,
+                                          epoch = dep.epoch, ver = dep.version, rel = dep.release):
+                     # If the dependency NAEVR matches what's already installed, skip it
+                     continue
                 else:
                     if dep.name != req[0]:
                         log.info("adding %s for %s, required by %s" %(dep.name, req[0], txmbr.name))
@@ -565,6 +570,9 @@ class AnacondaYum(YumSorter):
 
         if self.anaconda.isKickstart:
             for ksrepo in self.anaconda.id.ksdata.repoList:
+                if not self.anaconda.id.instClass.repoIsAllowed(ksrepo.name):
+                    continue
+
                 repo = AnacondaYumRepo(uri=ksrepo.baseurl,
                                        mirrorlist=ksrepo.mirrorlist,
                                        repoid=ksrepo.name)
@@ -635,6 +643,14 @@ class AnacondaYum(YumSorter):
     def urlgrabberFailureCB (self, obj, *args, **kwargs):
         log.warning("Try %s/%s for %s failed" % (obj.tries, obj.retry, obj.url))
 
+        delay = 0.25*(2**(obj.tries-1))
+        if delay > 1:
+            w = self.anaconda.intf.waitWindow(_("Retrying"), _("Retrying package download..."))
+            time.sleep(delay)
+            w.pop()
+        else:
+            time.sleep(delay)
+
     def getDownloadPkgs(self):
         downloadpkgs = []
         totalSize = 0
@@ -692,6 +708,13 @@ class AnacondaYum(YumSorter):
                 if i > 0:
                     pkgtup = self.tsInfo.reqmedia[i][0]
                     self.method.switchMedia(i, filename=pkgtup)
+
+                # In the split media case, we need to perform group removals
+                # for every transaction.
+                if self.anaconda.isKickstart:
+                    map(self.anaconda.backend.removeGroupsPackages,
+                        self.anaconda.id.ksdata.excludedGroupList)
+
                 self.populateTs(keepold=0)
                 self.ts.check()
                 self.ts.order()
@@ -705,7 +728,7 @@ class AnacondaYum(YumSorter):
         spaceneeded = {}
 
         try:
-            self.runTransaction(cb=cb)
+            rc = self.runTransaction(cb=cb)
         except YumBaseError, probs:
             # FIXME: we need to actually look at these problems...
             probTypes = { rpm.RPMPROB_NEW_FILE_CONFLICT : _('file conflicts'),
@@ -754,6 +777,16 @@ class AnacondaYum(YumSorter):
                                type="custom", custom_icon="error",
                                custom_buttons=[_("Re_boot")])
             sys.exit(1)
+        else:
+            if rc.return_code == 1:
+                msg = _("An error occurred while installing packages.  Please "
+                        "examine /root/install.log on your installed system for "
+                        "detailed information.")
+                log.error(msg)
+
+                if not self.anaconda.isKickstart:
+                    intf.messageWindow(_("Error running transaction"),
+                                       msg, type="warning")
 
     def doMacros(self):
         for (key, val) in self.macros.items():
@@ -1201,15 +1234,21 @@ class YumBackend(AnacondaBackend):
     def selectAnacondaNeeds(self):
         for pkg in ['authconfig', 'chkconfig', 'mkinitrd', 'rhpl',
                     'system-config-securitylevel-tui']:
-            self.selectPackage(pkg)
+            self.selectPackage("%s.%s" % (pkg, rpmUtils.arch.canonArch))
 
     def doPostSelection(self, anaconda):
         # Only solve dependencies on the way through the installer, not the way back.
         if anaconda.dir == DISPATCH_BACK:
+            self.ayum._undoDepInstalls()
             return
 
         dscb = YumDepSolveProgress(anaconda.intf)
         self.ayum.dsCallback = dscb
+
+        # isDep needs to be reverted to 0 after buildTransaction. It's for _undoDepInstalls()
+        noDepPkgs=[]
+        for txmbr in self.ayum.tsInfo.getMembers():
+            noDepPkgs.append(txmbr)
 
         # do some sanity checks for kernel and bootloader
         self.selectBestKernel(anaconda)
@@ -1244,6 +1283,10 @@ class YumBackend(AnacondaBackend):
 
         try:
             (code, msgs) = self.ayum.buildTransaction()
+            for pkg in noDepPkgs:
+                for txmbr in self.ayum.tsInfo.matchNaevr(name=pkg.name, arch=pkg.arch):
+                    txmbr.isDep=0
+
             (self.dlpkgs, self.totalSize, self.totalFiles)  = self.ayum.getDownloadPkgs()
 
             if not anaconda.id.getUpgrade():
@@ -1275,7 +1318,7 @@ class YumBackend(AnacondaBackend):
 
     def doPreInstall(self, anaconda):
         if anaconda.dir == DISPATCH_BACK:
-            for d in ("/selinux", "/dev"):
+            for d in ("/selinux", "/dev", "/proc/bus/usb"):
                 try:
                     isys.umount(anaconda.rootPath + d, removeDir = 0)
                 except Exception, e:
@@ -1313,7 +1356,7 @@ class YumBackend(AnacondaBackend):
         dirList = ['/var', '/var/lib', '/var/lib/rpm', '/tmp', '/dev', '/etc',
                    '/etc/sysconfig', '/etc/sysconfig/network-scripts',
                    '/etc/X11', '/root', '/var/tmp', '/etc/rpm', '/var/cache',
-                   '/var/cache/yum']
+                   '/var/cache/yum', '/etc/modprobe.d']
 
         # If there are any protected partitions we want to mount, create their
         # mount points now.
@@ -1364,6 +1407,12 @@ class YumBackend(AnacondaBackend):
                 except Exception, e:
                     log.error("error mounting selinuxfs: %s" %(e,))
 
+            # For usbfs
+            try:
+                isys.mount("/proc/bus/usb", anaconda.rootPath + "/proc/bus/usb", "usbfs")
+            except Exception, e:
+                log.error("error mounting usbfs: %s" %(e,))
+
             # we need to have a /dev during install and now that udev is
             # handling /dev, it gets to be more fun.  so just bind mount the
             # installer /dev
@@ -1379,6 +1428,11 @@ class YumBackend(AnacondaBackend):
             if os.access("/tmp/modprobe.conf", os.R_OK):
                 shutil.copyfile("/tmp/modprobe.conf", 
                                 anaconda.rootPath + "/etc/modprobe.conf")
+
+            if os.access("/tmp/anaconda.conf", os.R_OK):
+                shutil.copyfile("/tmp/anaconda.conf",
+                                anaconda.rootPath + "/etc/modprobe.d/anaconda.conf")
+
             anaconda.id.network.write(anaconda.rootPath)
             anaconda.id.iscsi.write(anaconda.rootPath)
             anaconda.id.zfcp.write(anaconda.rootPath)
@@ -1424,31 +1478,34 @@ class YumBackend(AnacondaBackend):
             if not os.path.isdir(d):
                 os.makedirs(d, mode=0755)
 
+            mpdevlst = []
+            for mpdev in anaconda.id.diskset.mpList or []:
+                mpdevlst.append(mpdev.name)
+
             for entry in anaconda.id.fsset.entries:
                 dev = entry.device.getDevice()
-                if dev.find('mpath') != -1:
-                    # grab just the mpathXXX part of the device name
-                    mpathname = dev.replace('/dev/', '')
-                    mpathname = mpathname.replace('mpath/', '')
-                    mpathname = mpathname.replace('mapper/', '')
+                for mpdev in mpdevlst:
+                    # eliminate the major number (ex. mpath0 -> mpath)
+                    pos = 0
+                    while pos < len(mpdev):
+                        if mpdev[pos].isdigit():
+                            mpdev = mpdev[:pos]
+                            break
+                        pos += 1
+                    if dev.find(mpdev) != -1:
+                        # grab just the basename of the device
+                        mpathname = dev.replace('/dev/', '')
+                        mpathname = mpathname.replace('mpath/', '')
+                        mpathname = mpathname.replace('mapper/', '')
 
-                    # we only want 'mpathNNN' where NNN is an int, strip all
-                    # trailing subdivisions of mpathNNN
-                    trail = re.search("(?<=^mpath).*$", mpathname)
-                    if trail is not None:
-                        i = 1
-                        major = None
-
-                        while i <= len(trail.group()):
-                            try:
-                                major = int(trail.group()[0:i])
-                                i += 1
-                            except:
-                                break
-
-                        if major is not None:
-                            mpathname = mpathname.replace(trail.group(), '')
-                            mpathname = "%s%d" % (mpathname, major,)
+                        # In case of mpathNNNpMMM, we only want 'mpathNNN' where 
+                        # NNN is an int, strip all trailing subdivisions of mpathNNN
+                        mpregex = "^%s(\d*)" % mpdev
+                        match = re.search(mpregex, mpathname)
+                        if match is not None:
+                            mpathname = match.group()
+                    else:
+                        continue
 
                     # if we have seen this mpath device, continue
                     if wwids != []:
@@ -1624,6 +1681,14 @@ class YumBackend(AnacondaBackend):
 
                 f.write('}\n\n')
 
+                for (mpathname, id) in wwids:
+                    if(mpathname.find("mpath") == -1):
+                        # this mpath device was renamed 
+                        f.write('\nmultipath {\n')
+                        f.write("        wwid \"%s\"\n" % (id,))
+                        f.write("        alias \"%s\"\n" % (mpathname,)) 
+                        f.write('}\n\n')
+
             f.close()
 
     def checkSupportedUpgrade(self, anaconda):
@@ -1784,6 +1849,9 @@ class YumBackend(AnacondaBackend):
                 return 0
 
     def deselectGroup(self, group, *args):
+        # This method is meant to deselect groups that have been previously
+        # selected in the UI.  It does not handle groups removed via kickstart.
+        # yum does not work that way (in 5.5).
         try:
             self.ayum.deselectGroup(group)
         except yum.Errors.GroupsError, e:
@@ -1827,6 +1895,20 @@ class YumBackend(AnacondaBackend):
         else:
             log.debug("no such package %s to remove" %(pkg,))
             return 0
+
+    def removeGroupsPackages(self, grp):
+        # This method removes all the groups of a package that has been
+        # excluded via kickstart.  This is subtly different from removing
+        # a group previously selected in the UI.
+        groups = self.ayum.comps.return_groups(grp)
+        for grp in groups:
+            for pkgname in grp.packages:
+                for txmbr in self.ayum.tsInfo:
+                    if txmbr.po.name == pkgname and txmbr.po.state in TS_INSTALL_STATES:
+                        self.ayum.tsInfo.remove(txmbr.po.pkgtup)
+
+                        for pkg in self.ayum.tsInfo.conditionals.get(txmbr.name, []):
+                            self.ayum.tsInfo.remove(pkg.pkgtup)
 
     def upgradeFindPackages(self):
         # check the installed system to see if the packages just

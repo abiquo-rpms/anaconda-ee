@@ -72,6 +72,9 @@
 #include "firewire.h"
 #include "pcmcia.h"
 #include "usb.h"
+#if !defined(__s390__) && !defined(__s390x__)
+#include "ibft.h"
+#endif
 
 /* install method stuff */
 #include "method.h"
@@ -96,6 +99,8 @@
 /* maximum number of extra arguments that can be passed to the second stage */
 #define MAX_EXTRA_ARGS 128
 static char * extraArgs[MAX_EXTRA_ARGS];
+char **cmdline_argv = NULL;
+int cmdline_argc = 0;
 static int hasGraphicalOverride();
 
 static int newtRunning = 0;
@@ -114,6 +119,8 @@ uint64_t flags = LOADER_FLAGS_SELINUX | LOADER_FLAGS_NOFB;
 
 int num_link_checks = 5;
 int post_link_sleep = 0;
+
+static pid_t init_pid = 1;
 
 static struct installMethod installMethods[] = {
     { N_("Local CDROM"), "cdrom", 0, CLASS_CDROM, mountCdromImage },
@@ -630,6 +637,10 @@ static void parseCmdLineFlags(struct loaderData_s * loaderData,
     if (poptParseArgvString(cmdLine, &argc, (const char ***) &argv))
         return;
 
+    /* Save for later use by other functions */
+    cmdline_argv = argv;
+    cmdline_argc = argc;
+
     /* we want to default to graphical and allow override with 'text' */
     flags |= LOADER_FLAGS_GRAPHICAL;
 
@@ -703,9 +714,11 @@ static void parseCmdLineFlags(struct loaderData_s * loaderData,
             flags |= LOADER_FLAGS_NOIPV4;
         } else if (!strcasecmp(argv[i], "noipv6")) {
             flags |= LOADER_FLAGS_NOIPV6;
-        } else if (!strcasecmp(argv[i], "kssendmac"))
+        } else if (!strcasecmp(argv[i], "kssendmac")) {
             flags |= LOADER_FLAGS_KICKSTART_SEND_MAC;
-        else if (!strncasecmp(argv[i], "loglevel=", 9)) {
+        } else if (!strcasecmp(argv[i], "noeject")) {
+            flags |= LOADER_FLAGS_NOEJECT;
+        } else if (!strncasecmp(argv[i], "loglevel=", 9)) {
             if (!strcasecmp(argv[i]+9, "debug")) {
                 loaderData->logLevel = strdup(argv[i]+9);
                 setLogLevel(DEBUGLVL);
@@ -958,7 +971,11 @@ static char *doLoaderMain(char * location,
         url = findAnacondaCD(location, modInfo, modLoaded, * modDepsPtr, !FL_RESCUE(flags));
         /* if we found a CD and we're not in rescue or vnc mode return */
         /* so we can short circuit straight to stage 2 from CD         */
-        if (url && (!FL_RESCUE(flags) && !hasGraphicalOverride()))
+        if (url && (!FL_RESCUE(flags) && !hasGraphicalOverride()
+#if !defined(__s390__) && !defined(__s390x__)
+                    && !ibft_present()
+#endif
+        ))
             return url;
         else {
             rhcdfnd = 1;
@@ -1124,7 +1141,11 @@ static char *doLoaderMain(char * location,
         case STEP_NETWORK:
             if ( (installMethods[validMethods[methodNum]].deviceType != 
                   CLASS_NETWORK) && (!hasGraphicalOverride()) &&
-                 !FL_ASKNETWORK(flags)) {
+                 !FL_ASKNETWORK(flags)
+#if !defined(__s390__) && !defined(__s390x__)
+                 && !ibft_present()
+#endif
+               ) {
                 needsNetwork = 0;
                 if (dir == 1) 
                     step = STEP_URL;
@@ -1373,6 +1394,11 @@ void loaderSegvHandler(int signum) {
     exit(1);
 }
 
+void loaderUsrXHandler(int signum) {
+    logMessage(INFO, "Sending signal %d to process %d\n", signum, init_pid);
+    kill(init_pid, signum);
+}
+
 static int anaconda_trace_init(void) {
 #if 0
     int fd;
@@ -1443,6 +1469,25 @@ int main(int argc, char ** argv) {
         { "virtpconsole", '\0', POPT_ARG_STRING, &virtpcon, 0, NULL, NULL },
         { 0, 0, 0, 0, 0, 0, 0 }
     };
+
+    /* get init PID if we have it */
+    if ((f = fopen("/var/run/init.pid", "r")) != NULL) {
+        char linebuf[256];
+
+        while (fgets(linebuf, sizeof(linebuf), f) != NULL) {
+            errno = 0;
+            init_pid = strtol(linebuf, NULL, 10);
+            if (errno == EINVAL || errno == ERANGE) {
+                logMessage(ERROR, "%s (%d): %m", __func__, __LINE__);
+                init_pid = 1;
+            }
+        }
+
+        fclose(f);
+    }
+
+    signal(SIGUSR1, loaderUsrXHandler);
+    signal(SIGUSR2, loaderUsrXHandler);
 
     /* Make sure sort order is right. */
     setenv ("LC_COLLATE", "C", 1);	
@@ -1571,6 +1616,7 @@ int main(int argc, char ** argv) {
     scsiSetup(modLoaded, modDeps, modInfo);
     dasdSetup(modLoaded, modDeps, modInfo);
     spufsSetup(modLoaded, modDeps, modInfo);
+    infinibandSetup(modLoaded, modDeps, modInfo);
 
     /* Note we *always* do this. If you could avoid this you could get
        a system w/o USB keyboard support, which would be bad. */
@@ -1612,15 +1658,51 @@ int main(int argc, char ** argv) {
       logMessage(INFO, "Trying to detect vendor driver discs");
       dd = findDriverDiskByLabel();
       dditer = dd;
+
+      if (dd && !loaderData.ksFile) {
+          startNewt();
+      }
+
       while(dditer){
+          /* If in interactive mode, ask for confirmation before loading the DD */
+          if (!loaderData.ksFile) {
+              char *buf = NULL;
+              if (asprintf(&buf,
+                          _("Driver disc was detected in %s. "
+                            "Do you want to use it?."),
+                           dditer->device) == -1) {
+                  logMessage(ERROR, "asprintf error in Driver Disc code");
+                  break;
+              };
+
+              rc = newtWinChoice(_("Driver disc detected"), _("Use it"), _("Skip it"),
+                                 buf);
+              free(buf);
+              if (rc == 2) {
+                  logMessage(INFO, "Skipping driver disk %s.", (char*)(dditer->device));
+                  
+                  /* next DD */
+                  dditer = dditer->next;
+                  continue;
+              }
+          }
+
+
 	if(loadDriverDiskFromPartition(&loaderData, dditer->device)){
 	  logMessage(ERROR, "Automatic driver disk loader failed for %s.", dditer->device);
 	}
 	else{
 	  logMessage(INFO, "Automatic driver disk loader succeeded for %s.", dditer->device);
 	}
+
+        /* Next DD */
 	dditer = dditer->next;
       }
+
+      if (dd && !loaderData.ksFile) {
+          stopNewt();
+      }
+
       ddlist_free(dd);
     }
     
@@ -1658,6 +1740,9 @@ int main(int argc, char ** argv) {
         logMessage(INFO, "mlx4_core module detected, trying to load the Ethernet part of it (mlx4_en)");
         mlLoadModuleSet("mlx4_en", modLoaded, modDeps, modInfo);
     }
+
+    /* If we got new devices from the DDs, they need their /dev/node to be created here */
+    createPartitionNodes();
 
     /* JKFIXME: loaderData->ksFile is set to the arg from the command line,
      * and then getKickstartFile() changes it and sets FL_KICKSTART.  
@@ -1730,13 +1815,19 @@ int main(int argc, char ** argv) {
     else if (FL_UPDATES(flags))
         loadUpdates(&loaderData);
 
-    mlLoadModuleSet("md:raid0:raid1:raid10:raid5:raid6:raid456:dm-raid45:fat:msdos:jbd2:crc16:ext4:jbd:ext3:lock_nolock:gfs2:reiserfs:jfs:xfs:dm-mod:dm-zero:dm-mirror:dm-snapshot:dm-multipath:dm-round-robin:dm-emc:dm-crypt:dm-mem-cache:dm-region_hash:dm-message:aes_generic:sha256", modLoaded, modDeps, modInfo);
+    mlLoadModuleSet("md:raid0:raid1:raid10:raid5:raid6:raid456:dm-raid45:fat:msdos:jbd2:crc16:ext4:jbd:ext3:lock_nolock:gfs2:reiserfs:jfs:xfs:dm-mod:dm-zero:dm-mirror:dm-snapshot:dm-multipath:dm-round-robin:dm-emc:dm-crypt:dm-mem-cache:dm-region_hash:dm-message", modLoaded, modDeps, modInfo);
+
+    /* crypto modules */
+    mlLoadModuleSet("aead:aes_generic:rng:ansi_cprng:krng:anubis:crypto_blkcipher:authenc:blowfish:cast5:cast6:cbc:ccm:chainiv:crypto_hash:cryptomgr:ctr:zlib_deflate:deflate:crypto_null:des:ecb:eseqiv:gf128mul:hmac:khazad:md4:md5:michael_mic:seqiv:serpent:sha256:sha512:tea:tgr192:twofish:wp512:xcbc:xts", modLoaded, modDeps, modInfo);
 
     usbInitializeMouse(modLoaded, modDeps, modInfo);
 
     /* we've loaded all the modules we're going to.  write out a file
      * describing which scsi disks go with which scsi adapters */
     writeScsiDisks(modLoaded);
+
+    /* Write out the module blacklist file */
+    mlWriteBlacklist();
 
     /* if we are in rescue mode lets load st.ko for tape support */
     if (FL_RESCUE(flags))
@@ -1831,6 +1922,9 @@ int main(int argc, char ** argv) {
 
     if (FL_NOIPV6(flags))
         *argptr++ = "--noipv6";
+
+    if (FL_NOEJECT(flags))
+        *argptr++ = "--noeject";
 
     if (FL_RESCUE(flags)) {
         *argptr++ = "--rescue";
@@ -1941,23 +2035,6 @@ int main(int argc, char ** argv) {
             waitpid(pid, &status, 0);
         }
 
-#if defined(__s390__) || defined(__s390x__)
-        /* FIXME: we have to send a signal to linuxrc on s390 so that shutdown
-         * can happen.  this is ugly */
-        FILE * f;
-        f = fopen("/var/run/init.pid", "r");
-        if (!f) {
-            logMessage(WARNING, "can't find init.pid, guessing that init is pid 1");
-            pid = 1;
-        } else {
-            char * buf = malloc(256);
-            char *ret;
-
-            ret = fgets(buf, 256, f);
-            pid = atoi(buf);
-        }
-        kill(pid, SIGUSR2);
-#endif
         stop_fw_loader(&loaderData);
         return rc;
     }

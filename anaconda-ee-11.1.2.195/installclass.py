@@ -82,7 +82,8 @@ class BaseInstallClass:
 	pass
 
     def setBootloader(self, id, location=None, forceLBA=0, password=None,
-                      md5pass=None, appendLine="", driveorder = []):
+	              md5pass=None, appendLine="", driveorder = [], hvArgs=""):
+
         if appendLine:
             id.bootloader.args.set(appendLine)
         id.bootloader.setForceLBA(forceLBA)
@@ -94,6 +95,8 @@ class BaseInstallClass:
             id.bootloader.defaultDevice = location
         else:
             id.bootloader.defaultDevice = -1
+	if hvArgs:
+	    id.bootloader.hvArgs = hvArgs
 
         # XXX throw out drives specified that don't exist.  anything else
         # seems silly
@@ -141,6 +144,7 @@ class BaseInstallClass:
 		 "partitiondone",
 		 "bootloadersetup",                 
 		 "bootloader",
+		 "reipl",
                  "networkdevicecheck",
 		 "network",
 		 "timezone",
@@ -216,6 +220,9 @@ class BaseInstallClass:
     def getPackagePaths(self, uri):
         return { "base": uri }
 
+    def repoIsAllowed(self, repoName):
+	return True
+
     def handleRegKey(self, key, intf):
         pass
 
@@ -260,7 +267,9 @@ class BaseInstallClass:
     def setAuthentication(self, id, authStr):
         id.auth = authStr
 
-    def setNetwork(self, id, bootProto, ip, netmask, ethtool, device = None, onboot = 1, dhcpclass = None, essid = None, wepkey = None):
+    def setNetwork(self, id, bootProto, ip, netmask, ethtool, device = None,
+		   onboot = 1, dhcpclass = None, essid = None, wepkey = None,
+		   ipv4=True, ipv6=True):
 	if bootProto:
 	    devices = id.network.netdevices
             firstdev = id.network.getFirstDeviceName()
@@ -296,6 +305,9 @@ class BaseInstallClass:
                         dev.set(("essid", essid))
                     if wepkey:
                         dev.set(("wepkey", wepkey))
+		
+		dev.set(("useIPv4", ipv4))
+		dev.set(("useIPv6", ipv6))
 
     def setLanguageDefault(self, id, default):
 	id.instLanguage.setDefault(default)

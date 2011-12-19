@@ -48,6 +48,7 @@
 #define LOADER_FLAGS_IS_KICKSTART       (((uint64_t) 1) << 35)
 #define LOADER_FLAGS_HAVE_CMSCONF       (((uint64_t) 1) << 36)
 #define LOADER_FLAGS_AUTOMODDISK        (((uint64_t) 1) << 37)
+#define LOADER_FLAGS_NOEJECT            (((uint64_t) 1) << 38)
 
 #define FL_TESTING(a)            ((a) & LOADER_FLAGS_TESTING)
 #define FL_EXPERT(a)             ((a) & LOADER_FLAGS_EXPERT)
@@ -91,6 +92,7 @@
 #define FL_IS_KICKSTART(a)       ((a) & LOADER_FLAGS_IS_KICKSTART)
 #define FL_HAVE_CMSCONF(a)       ((a) & LOADER_FLAGS_HAVE_CMSCONF)
 #define FL_AUTOMODDISK(a)        ((a) & LOADER_FLAGS_AUTOMODDISK)
+#define FL_NOEJECT(a)            ((a) & LOADER_FLAGS_NOEJECT)
 
 void startNewt(void);
 void stopNewt(void);
@@ -134,6 +136,10 @@ struct loaderData_s {
     moduleDeps * modDepsPtr;
     moduleInfoSet modInfo;
 };
+
+/* parsed /proc/cmdline */
+extern char **cmdline_argv;
+extern int cmdline_argc;
 
 /* 64 bit platforms, definitions courtesy of glib */
 #if defined (__x86_64__) || defined(__ia64__) || defined(__alpha__) || defined(__powerpc64__) || defined(__sparc64__) || defined(__s390x__)

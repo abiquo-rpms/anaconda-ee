@@ -49,6 +49,7 @@ class InstallClass(baseclass):
                     "upgradecontinue",
                     "reposetup",
                     "upgbootloader",
+		    "reipl",
                     "checkdeps",
 		    "dependencies",
 		    "confirmupgrade",

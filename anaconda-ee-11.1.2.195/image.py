@@ -47,6 +47,10 @@ else:
 def presentRequiredMediaMessage(anaconda):
     reqcds = anaconda.backend.ayum.tsInfo.reqmedia.keys()
 
+    # -99 means unknown media, ignore it if present
+    while -99 in reqcds:
+        reqcds.remove(-99)
+
     # if only one CD required no need to pop up a message
     if len(reqcds) < 2:
 	return
@@ -77,13 +81,11 @@ def presentRequiredMediaMessage(anaconda):
     reqcds.sort()
     reqcdstr = ""
     for cdnum in reqcds:
-        if cdnum == -99: # non-CD bits
-            continue
-	reqcdstr += "\t\t%s %s CD #%d\n" % (product.productName, product.productVersion, cdnum,)
+	reqcdstr += "\t\t%s %s disc #%d\n" % (product.productName, product.productVersion, cdnum,)
 		
     return anaconda.intf.messageWindow( _("Required Install Media"),
 				        _("The software you have selected to "
-                                          "install will require the following CDs:\n\n"
+                                          "install will require the following discs:\n\n"
                                           "%s\nPlease "
                                           "have these ready before proceeding with "
                                           "the installation.  If you need to abort "
@@ -140,7 +142,10 @@ class CdromInstallMethod(ImageInstallMethod):
                                    % ("/mnt/source",))
 
     def ejectCD(self):
-        isys.ejectCdrom(self.device, makeDevice=1)
+        if self.noeject:
+            log.info("noeject in effect, not ejecting cdrom")
+        else:
+            isys.ejectCdrom(self.device, makeDevice=1)
 
     def badPackageError(self, pkgname):
         return _("The file %s cannot be opened.  This is due to a missing "
@@ -257,7 +262,10 @@ class CdromInstallMethod(ImageInstallMethod):
                 break
 
         if not done:
-            isys.ejectCdrom(self.device)
+            if self.noeject:
+                log.info("noeject in effect, not ejecting cdrom")
+            else:
+                isys.ejectCdrom(self.device)
 
         while not done:
             if self.intf is not None:
@@ -303,7 +311,10 @@ class CdromInstallMethod(ImageInstallMethod):
                             _("That's not the correct %s CDROM.")
                                        % (productName,))
                     isys.umount("/mnt/source")
-                    isys.ejectCdrom(self.device)
+                    if self.noeject:
+                        log.info("noeject in effect, not ejecting cdrom")
+                    else:
+                        isys.ejectCdrom(self.device)
             except:
                 self.messageWindow(_("Error"), 
                         _("Unable to access the CDROM."))
@@ -327,7 +338,7 @@ class CdromInstallMethod(ImageInstallMethod):
 	except SystemError:
 	    pass
 
-    def __init__(self, method, rootPath, intf):
+    def __init__(self, method, rootPath, intf, noeject=False):
         """@param method cdrom://device:/path"""
         url = method[8:]
 	(self.device, tree) = string.split(url, ":", 1)
@@ -337,6 +348,7 @@ class CdromInstallMethod(ImageInstallMethod):
 	self.progressWindow = intf.progressWindow
 	self.waitWindow = intf.waitWindow
         self.loopbackFile = None
+        self.noeject = noeject
 
         # figure out which disc is in.  if we fail for any reason,
         # assume it's just disc1.

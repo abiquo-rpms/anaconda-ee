@@ -72,6 +72,14 @@ char *netServerPrompt = \
        "    o the directory on that server containing\n" 
        "      %s for your architecture\n");
 
+char *nfsServerPrompt = \
+    N_("Please enter the following information:\n"
+       "\n"
+       "    o the name or IP number of your NFS server\n" 
+       "    o the directory on that server containing\n" 
+       "      %s for your architecture\n"
+       "    o optionally, parameters for the NFS mount\n");
+
 /**
  * Callback function for the CIDR entry boxes on the manual TCP/IP
  * configuration window.
@@ -1090,8 +1098,8 @@ int manualNetConfig(char * device, struct networkDeviceConfig * cfg,
         newtGridSetField(egrid, 1, pos, NEWT_GRID_SUBGRID, qgrid,
                          0, 0, 0, 0, NEWT_ANCHOR_LEFT, 0);
 
-        newtComponentAddCallback(ipcomps->ipv4Entry, ipCallback, &ipcomps);
-        newtComponentAddCallback(ipcomps->cidr4Entry, cidrCallback, &ipcomps);
+        newtComponentAddCallback(ipcomps->ipv4Entry, ipCallback, ipcomps);
+        newtComponentAddCallback(ipcomps->cidr4Entry, cidrCallback, ipcomps);
 
         /* populate fields if we have data already */
         tip = NULL;
@@ -1142,8 +1150,8 @@ int manualNetConfig(char * device, struct networkDeviceConfig * cfg,
         newtGridSetField(egrid, 1, pos, NEWT_GRID_SUBGRID, rgrid,
                          0, 0, 0, 0, NEWT_ANCHOR_LEFT, 0);
 
-        newtComponentAddCallback(ipcomps->ipv6Entry, ipCallback, &ipcomps);
-        newtComponentAddCallback(ipcomps->cidr6Entry, cidrCallback, &ipcomps);
+        newtComponentAddCallback(ipcomps->ipv6Entry, ipCallback, ipcomps);
+        newtComponentAddCallback(ipcomps->cidr6Entry, cidrCallback, ipcomps);
 
         /* populate fields if we have data already */
         tip = NULL;
@@ -1210,8 +1218,8 @@ int manualNetConfig(char * device, struct networkDeviceConfig * cfg,
         newtEntrySet(ipcomps->nsEntry, ret, 1);
     }
 
-    newtComponentAddCallback(ipcomps->gwEntry, ipCallback, &ipcomps);
-    newtComponentAddCallback(ipcomps->nsEntry, ipCallback, &ipcomps);
+    newtComponentAddCallback(ipcomps->gwEntry, ipCallback, ipcomps);
+    newtComponentAddCallback(ipcomps->nsEntry, ipCallback, ipcomps);
 
     /* button bar at the bottom of the window */
     buttons = newtButtonBar(_("OK"), &okay, _("Back"), &back, NULL);
@@ -1538,7 +1546,7 @@ int doDhcp(struct networkDeviceConfig *dev) {
     pid_t pid;
     key_t key;
     int mturet;
-    int culvert[2];
+    int culvert[2], domainp[2];
     char buf[PATH_MAX];
 
     /* clear existing IP addresses */
@@ -1605,7 +1613,11 @@ int doDhcp(struct networkDeviceConfig *dev) {
         strncpy(pumpdev->device, dev->dev.device, IF_NAMESIZE);
 
         if (pipe(culvert) == -1) {
-            logMessage(ERROR, "%s: pipe(): %s", __func__, strerror(errno));
+            logMessage(ERROR, "%s: culvert pipe(): %s", __func__, strerror(errno));
+            return 1;
+        }
+        if (pipe(domainp) == -1) {
+            logMessage(ERROR, "%s: domainp pipe(): %s", __func__, strerror(errno));
             return 1;
         }
 
@@ -1613,6 +1625,7 @@ int doDhcp(struct networkDeviceConfig *dev) {
         pid = fork();
         if (pid == 0) {
             close(culvert[0]);
+            close(domainp[0]);
 
             if (pumpdev->set & PUMP_INTFINFO_HAS_MTU) {
                 mturet = nl_set_device_mtu((char *) pumpdev->device, pumpdev->mtu);
@@ -1659,10 +1672,11 @@ int doDhcp(struct networkDeviceConfig *dev) {
 
             if (pumpdev->set & PUMP_NETINFO_HAS_DOMAIN) {
                 if (pumpdev->domain) {
-                    if (setdomainname(pumpdev->domain,
-                                      strlen(pumpdev->domain)) == -1) {
-                        logMessage(ERROR, "failed to set domain name in %s: %s",
-                                   __func__, strerror(errno));
+                    if (write(domainp[1], pumpdev->domain,
+                              strlen(pumpdev->domain) + 1) == -1) {
+                        logMessage(ERROR, "failed to send domain name to parent "
+                                          "in %s: %s", __func__,
+                                   strerror(errno));
                     }
                 }
             }
@@ -1679,11 +1693,13 @@ int doDhcp(struct networkDeviceConfig *dev) {
             }
 
             close(culvert[1]);
+            close(domainp[1]);
             exit(0);
         } else if (pid == -1) {
             logMessage(CRITICAL, "dhcp client failed to start");
         } else {
             close(culvert[1]);
+            close(domainp[1]);
 
             if (waitpid(pid, &status, 0) == -1) {
                 logMessage(ERROR, "waitpid() failure in %s", __func__);
@@ -1735,20 +1751,32 @@ int doDhcp(struct networkDeviceConfig *dev) {
             }
 
             if (dev->dev.set & PUMP_NETINFO_HAS_DOMAIN) {
+                memset(&buf, '\0', sizeof(buf));
                 if (dev->dev.domain) {
                     free(dev->dev.domain);
                     dev->dev.domain = NULL;
                 }
 
-                memset(namebuf, '\0', HOST_NAME_MAX);
+                while ((sz = read(domainp[0], &buf, sizeof(buf))) > 0) {
+                    if (dev->dev.domain == NULL) {
+                        dev->dev.domain = calloc(sizeof(char), sz + 1);
+                        if (dev->dev.domain == NULL) {
+                            logMessage(ERROR, "unable to read domain name");
+                            break;
+                        }
 
-                if (getdomainname(namebuf, HOST_NAME_MAX) == -1) {
-                    logMessage(ERROR, "unable to get domain name %s: %s",
-                               __func__, strerror(errno));
-                }
+                        dev->dev.domain = strncpy(dev->dev.domain, buf, sz);
+                    } else {
+                        dev->dev.domain = realloc(dev->dev.domain,
+                                                    strlen(dev->dev.domain) +
+                                                    sz + 1);
+                        if (dev->dev.domain == NULL) {
+                            logMessage(ERROR, "unable to read domain name");
+                            break;
+                        }
 
-                if (namebuf != NULL) {
-                    dev->dev.domain = strdup(namebuf);
+                        dev->dev.domain = strncat(dev->dev.domain, buf, sz);
+                    }
                 }
             }
 
@@ -1781,6 +1809,7 @@ int doDhcp(struct networkDeviceConfig *dev) {
             }
 
             close(culvert[0]);
+            close(domainp[0]);
 
             if (shmdt(pumpdev) == -1) {
                 logMessage(ERROR, "%s: shmdt() pumpdev: %s", __func__,
@@ -2267,10 +2296,8 @@ int chooseNetworkInterface(struct loaderData_s * loaderData) {
         logMessage(INFO, "looking for iBFT configured device %s with link", ibftmacaddr);
 	lookForLink = 0;
 
-	for (i = 0; devs[i]; i++) {
-	    if (!devs[i]->device)
-		continue;
-            devmacaddr = nl_mac2str(devs[i]->device);
+	for (i = 0; i < deviceNums; i++) {
+            devmacaddr = nl_mac2str(devices[i]);
 	    if(!strcasecmp(devmacaddr, ibftmacaddr)){
                 logMessage(INFO, "%s has the right MAC (%s), checking for link", devmacaddr, devices[i]);
 		free(devmacaddr);
@@ -2408,10 +2435,10 @@ int chooseNetworkInterface(struct loaderData_s * loaderData) {
     /* turn off the non-active interface.  this should keep things from
      * breaking when we need the interface to do the install as long as
      * you keep using that device */
-    for (i = 0; devs[i]; i++) {
+    for (i = 0; i < deviceNum; i++) {
         if (strcmp(loaderData->netDev, devices[i]))
             if (!FL_TESTING(flags))
-                clearInterface(devs[i]->device);
+                clearInterface(devices[i]);
     }
 
     return LOADER_OK;
@@ -2423,10 +2450,14 @@ int chooseNetworkInterface(struct loaderData_s * loaderData) {
 int kickstartNetworkUp(struct loaderData_s * loaderData,
                        struct networkDeviceConfig *netCfgPtr) {
     int rc, query;
+    static struct networkDeviceConfig netCfgStore;
 
     /* we may have networking already, so return to the caller */
     if ((loaderData->ipinfo_set == 1) || (loaderData->ipv6info_set == 1)) {
         logMessage(INFO, "networking already configured in kickstartNetworkUp");
+    
+        /* Give the network information to the caller (#495042) */
+        memcpy(netCfgPtr, &netCfgStore, sizeof(netCfgStore));
         return 0;
     }
 
@@ -2491,6 +2522,9 @@ int kickstartNetworkUp(struct loaderData_s * loaderData,
         else
             break;
     } while (1);
+
+    /* Store all information for possible subsequent calls (#495042) */
+    memcpy(&netCfgStore, netCfgPtr, sizeof(netCfgStore));
 
     return 0;
 }

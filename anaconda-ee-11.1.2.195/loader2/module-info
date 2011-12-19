@@ -143,10 +143,22 @@ be2net
 	eth
 	"ServerEngines BladeEngine 2 10Gb NIC Driver"
 
+be2iscsi
+	eth
+	"ServerEngines BladeEngine 2 Open iSCSI Driver"
+
 bcm5700
 	eth
 	"Broadcom BCM5700 10/100/1000 ethernet adapter"
 	line_speed "Line speed" "1[0]+"
+
+bfa
+	eth
+	"Brocade Fibre Channel to PCIe Host Bus Adapters (HBAs)"
+
+bna
+	eth
+	"Brocade FCoE/CEE to PCIe Converged Network Adapters (CNAs)"
 
 bnx2
 	eth
@@ -167,6 +179,10 @@ cxgb
 cxgb3
 	eth
 	"Chelsio 10Gb Ethernet adapter"
+
+cxgb4
+	eth
+	"Chelsio Terminator4 10G unified wire network controller"
 
 de600
 	eth
@@ -288,6 +304,18 @@ hp100
 #	eth
 #	"Amiga Linux/m68k Hydra"
 
+ib_ehca
+	eth
+	"eHCA support"
+
+ib_ipath
+	eth
+	"QLogic InfiniPath Driver"
+
+ib_mthca
+	eth
+	"Mellanox HCA support"
+
 ibmtr
 	tr
 	"Shared-memory IBM Token Ring 16/4"
@@ -300,6 +328,10 @@ igb
 igbvf
 	eth
 	"Intel 82576 Virtual Function"
+
+isci
+	scsi
+	"Intel Patsburg SAS Controller Unit driver"
 
 ixgb
 	eth
@@ -406,6 +438,10 @@ qlge
 qla3xxx
 	eth
 	"Qlogic 3xxx"
+
+qlcnic
+	eth
+	"QLogic Corp cLOM8214 1/10GbE Controller"
 
 8139too
 	eth
@@ -648,6 +684,10 @@ airport
 	scsi_hostadapter
 	"3ware 9000 Series Storage Controller"
 
+3w-sas
+	scsi_hostadapter
+	"LSI 3ware 97xx SAS/SATA RAID Controller"
+
 AM53C974
 	scsi_hostadapter
 	"AM53/79C974 (PCscsi) driver"
@@ -736,6 +776,10 @@ i2o_block
         scsi
         "I2O Block driver"
 
+ibmvfc
+	scsi_hostadapter
+	"Power6 Virtual FC"
+
 ipr
 	scsi_hostadapter
 	"IBM iSeries/pSeries native storage"
@@ -799,6 +843,10 @@ pluto
 pcd
 	block-major-46  cdrom
 	"Parallel-port IDE CDROM"
+
+pmcraid
+        scsi_hostadapter
+        "PMC Sierra MaxRAID Controller Adapters"
 
 qla1280
 	scsi_hostadapter
@@ -1167,3 +1215,6 @@ virtio_blk
 virtio_net
 	eth
 	"Virtio network driver"
+
+# vim: noexpandtab
+

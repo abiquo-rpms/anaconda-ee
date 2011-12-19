@@ -107,3 +107,4 @@ class AbiquoRS:
         self.abiquo_dvs_vcenter_password = 'change-me'
         self.abiquo_dvs_vcenter_user = 'change-me'
         self.abiquo_dvs_enabled = 'false'
+	self.abiquo_datacenter_id = 'Abiquo'

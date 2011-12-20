@@ -784,9 +784,12 @@ class AnacondaYum(YumSorter):
                         "detailed information.")
                 log.error(msg)
 
-                if not self.anaconda.isKickstart:
-                    intf.messageWindow(_("Error running transaction"),
-                                       msg, type="warning")
+		# FIXME Abiquo
+		# do not bug the user,
+		# Some packages are buggy (i.e. jdk) but it's harmless
+                #if not self.anaconda.isKickstart:
+                #    intf.messageWindow(_("Error running transaction"),
+                #                       msg, type="warning")
 
     def doMacros(self):
         for (key, val) in self.macros.items():

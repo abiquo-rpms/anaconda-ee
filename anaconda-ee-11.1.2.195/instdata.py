@@ -22,6 +22,7 @@ import security
 import timezone
 import abiquo
 import abiquo_rs
+import abiquo_v2v
 import desktop
 import fsset
 import bootloader
@@ -62,6 +63,7 @@ class InstallData:
         self.timezone = timezone.Timezone()
         self.abiquo = abiquo.Abiquo()
         self.abiquo_rs = abiquo_rs.AbiquoRS()
+        self.abiquo_v2v = abiquo_v2v.AbiquoV2V()
         self.users = None
         self.rootPassword = { "isCrypted": False, "password": "" }
         self.abiquoPassword = "xabiquo"
@@ -182,6 +184,10 @@ class InstallData:
                 self.anaconda.backend.isGroupSelected('abiquo-monolithic'):
                     log.info("Writing abiquo_rs settings")
                     self.abiquo_rs.write (self.anaconda.rootPath)
+        if self.anaconda.backend.isGroupSelected('abiquo-v2v') and not \
+                self.anaconda.backend.isGroupSelected('abiquo-remote-services'):
+                    log.info("Writing abiquo_v2v settings")
+                    self.abiquo_v2v.write (self.anaconda.rootPath)
 
         # make sure crypt_style in libuser.conf matches the salt we're using
         users.createLuserConf(self.anaconda.rootPath, saltname=self.getSalt())

@@ -8,7 +8,7 @@ import glob
 log = logging.getLogger("anaconda")
 
 def abiquoPostInstall(anaconda):
-    log.info("Abiquo 1.8 post")
+    log.info("Abiquo 2.0 post")
 
     if os.path.exists(anaconda.rootPath + '/opt/abiquo/tomcat/webapps/server'):
 	# Write motd init script

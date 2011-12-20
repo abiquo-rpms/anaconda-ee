@@ -8,7 +8,7 @@ import iutil
 import types
 import re
 import shutil
-from abiquo_postinstall_18 import *
+from abiquo_postinstall_20 import *
 
 try:
     import instnum

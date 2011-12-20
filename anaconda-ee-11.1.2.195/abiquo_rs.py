@@ -1,7 +1,5 @@
 #
-# timezone.py - timezone install data
-#
-# Copyright 2001 Red Hat, Inc.
+# Copyright 2011 Abiquo, Inc.
 #
 # This software may be freely redistributed under the terms of the GNU
 # library public license.

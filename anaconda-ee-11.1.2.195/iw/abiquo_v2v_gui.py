@@ -27,8 +27,9 @@ class AbiquoV2VWindow(InstallWindow):
     def getNext(self):
         nfsUrl = self.xml.get_widget('abiquo_nfs_repository').get_text()
         datacenterId = self.xml.get_widget('datacenterId').get_text()
+        nfs_repo_selected = ('abiquo-nfs-repository' in self.anaconda.id.abiquo.selectedGroups)
 
-        if re.search('(localhost|127\.0\.0\.1)', nfsUrl):
+        if re.search('(localhost|127\.0\.0\.1)', nfsUrl) and not nfs_repo_selected:
             self.intf.messageWindow(_("<b>NFS Repository Error</b>"),
                        _("<b>127.0.0.1 or localhost detected</b>\n\n"
                          "127.0.0.1 or localhost values are not allowed here. "
@@ -47,16 +48,17 @@ class AbiquoV2VWindow(InstallWindow):
                                 type="warning")
             raise gui.StayOnScreen
 
-        # validate the host
-        host = nfsUrl.split(":")[0]
-        try:
-            network.sanityCheckIPString(host)
-        except:
-            if network.sanityCheckHostname(host) is not None:
-                self.intf.messageWindow(_("<b>Invalid NFS URL</b>"),
-                           _("NFS Repository URL is invalid."),
-                                    type="warning")
-                raise gui.StayOnScreen
+        if not nfs_repo_selected:
+            # validate the host
+            host = nfsUrl.split(":")[0]
+            try:
+                network.sanityCheckIPString(host)
+            except:
+                if network.sanityCheckHostname(host) is not None:
+                    self.intf.messageWindow(_("<b>Invalid NFS URL</b>"),
+                       _("NFS Repository URL is invalid."),
+                            type="warning")
+                    raise gui.StayOnScreen
 
         # validate the abiquo server IP
         try:
@@ -81,12 +83,14 @@ class AbiquoV2VWindow(InstallWindow):
 
     def helpButtonClicked(self, data):
         log.info("helpButtonClicked")
-        msg = (
+        nfs_help = (
         "<b>NFS Repository</b>\n"
         "The NFS URI where the Abiquo NFS repository is located.\n"
         "i.e.\n"
         "my-nfs-server-ip:/opt/vm_repository\n"
         "\n"
+        )
+        msg = (
         "<b>Abiquo Server IP</b>\n"
         "Abiquo Server (management server) IP address.\n\n"
         "<b>Datacenter ID</b>\n"
@@ -95,6 +99,10 @@ class AbiquoV2VWindow(InstallWindow):
         "make sure you use the same Datacenter ID when installing Remote Services.\n"
         "\n"
         )
+
+        if not ('abiquo-nfs-repository' in self.anaconda.id.abiquo.selectedGroups):
+            msg = nfs_help + msg
+        
         self.intf.messageWindow(_("<b>V2V Services Settings</b>"), msg, type="ok")
 
     def getScreen (self, anaconda):
@@ -114,4 +122,10 @@ class AbiquoV2VWindow(InstallWindow):
         if server_ip == '127.0.0.1':
             server_ip = '<server-ip>'
         self.xml.get_widget('abiquo_server_ip').set_text(server_ip)
+        # We don't need to enter NFS info if nfs-repository selected
+        if 'abiquo-nfs-repository' in self.anaconda.id.abiquo.selectedGroups:
+            box = self.xml.get_widget("serverSettingsBox")
+            hbox = self.xml.get_widget("hbox1")
+            box.remove(hbox)
+
         return vbox

@@ -30,15 +30,16 @@ class AbiquoDistributedWindow(InstallWindow):
 
         if ('abiquo-remote-services' in self.anaconda.id.abiquo.selectedGroups):
             self.dispatch.skipStep("abiquo_rs", skip = 0)
+            self.dispatch.skipStep("abiquo_v2v", skip = 1)
         else:
             self.dispatch.skipStep("abiquo_rs", skip = 1)
         
-        if ('abiquo-v2v' in self.anaconda.id.abiquo.selectedGroups) and \
-                ('abiquo-nfs-repository' not in self.anaconda.id.abiquo.selectedGroups):
-            self.dispatch.skipStep("abiquo_v2v", skip = 0)
-        else:
-            self.dispatch.skipStep("abiquo_v2v", skip = 1)
-
+	if ('abiquo-v2v' in self.anaconda.id.abiquo.selectedGroups) and not \
+		('abiquo-remote-services' in self.anaconda.id.abiquo.selectedGroups):
+        		self.dispatch.skipStep("abiquo_v2v", skip = 0)
+    	else:
+		self.dispatch.skipStep("abiquo_v2v", skip = 1)
+        
     def _selectionChanged(self, btn):
         lbl = btn.get_label()
         if btn.get_active():

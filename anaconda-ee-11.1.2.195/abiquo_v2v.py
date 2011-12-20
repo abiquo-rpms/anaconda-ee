@@ -29,8 +29,9 @@ class AbiquoV2V:
         if flags.test:
             return
 
-	# Write only if V2V present
-        if os.path.isdir(instPath + "/opt/abiquo/tomcat/webapps/bpm-async"):
+	# Write only if V2V present and remote services not installed
+        if os.path.isdir(instPath + "/opt/abiquo/tomcat/webapps/bpm-async") and not \
+			os.path.isdir(instPath + "/opt/abiquo/tomcat/webapps/bpm-async"):
             f = open(instPath + "/opt/abiquo/config/abiquo.properties", 'a')
             f.write("abiquo.rabbitmq.username = %s\n" %
                     self.abiquo_rabbitmq_username)

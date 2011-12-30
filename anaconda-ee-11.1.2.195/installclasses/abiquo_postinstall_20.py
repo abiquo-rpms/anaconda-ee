@@ -194,6 +194,12 @@ exit 0
                                         stdout="/dev/tty5", stderr="/dev/tty5",
                                         root=anaconda.rootPath)
     
+    if anaconda.backend.isGroupSelected('abiquo-server'):
+        iutil.execWithRedirect("/sbin/chkconfig",
+                                ['redis', "on"],
+                                stdout="/dev/tty5", stderr="/dev/tty5",
+                                        root=anaconda.rootPath)
+    
     if anaconda.backend.isGroupSelected('abiquo-monolithic'):
         iutil.execWithRedirect("/sbin/chkconfig",
                                 ['redis', "on"],

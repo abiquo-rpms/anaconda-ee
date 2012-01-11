@@ -88,7 +88,7 @@ class AbiquoPasswordWindow (InstallWindow):
         box = gtk.VBox (spacing=6)
         box.set_border_width(5)
 
-        hbox = gtk.HBox()
+        #hbox = gtk.HBox()
         #pix = gui.readImageFromFile ("root-password.png")
         #if pix:
         #    hbox.pack_start (pix, False)
@@ -98,7 +98,7 @@ class AbiquoPasswordWindow (InstallWindow):
         label.set_alignment(0.0, 0.5)
 	box.pack_start(label, False)
 
-        box.pack_start(hbox, False)
+        #box.pack_start(hbox, False)
        
         self.forward = lambda widget, box=box: box.emit('focus', gtk.DIR_TAB_FORWARD)
         
@@ -132,10 +132,10 @@ class AbiquoPasswordWindow (InstallWindow):
 	
 # Description
 	label = gtk.Label("")
-        label.set_markup(_("\nThe Cloud Administrator account is used for "
+        label.set_markup("The Cloud Administrator account is used for "
                            "administering Abiquo.\n\n"
                            "<b>Default user:</b> admin\n"
-                           "<b>Default password: xabiquo"))
+                           "<b>Default password:</b> xabiquo")
         label.set_line_wrap(True)
         label.set_size_request(400, -1)
         label.set_alignment(0.0, 0.5)
@@ -146,7 +146,6 @@ class AbiquoPasswordWindow (InstallWindow):
         wrapper = gtk.HBox(0, False)
         wrapper.pack_start (self.rootStatus)
         box.pack_start (wrapper, False)
-
 
 	self.pw.set_text(self.abiquoPassword)
 	self.confirm.set_text(self.abiquoPassword)

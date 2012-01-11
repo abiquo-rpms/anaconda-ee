@@ -44,39 +44,39 @@ class AbiquoRS:
                     self.abiquo_appliancemanager_localRepositoryPath)
             f.write("abiquo.appliancemanager.repositoryLocation = %s\n" %
                     self.abiquo_nfs_repository)
-            f.write("abiquo.virtualfactory.xenserver.repositoryLocation = %s\n" %
+            f.write("#abiquo.virtualfactory.xenserver.repositoryLocation = %s\n" %
                     self.abiquo_nfs_repository)
-            f.write("abiquo.virtualfactory.vmware.repositoryLocation = %s\n" %
+            f.write("#abiquo.virtualfactory.vmware.repositoryLocation = %s\n" %
                     self.abiquo_nfs_repository)
-            f.write("abiquo.virtualfactory.storagelink.user = %s\n" %
+            f.write("#abiquo.virtualfactory.storagelink.user = %s\n" %
                     self.abiquo_virtualfactory_storagelink_user)
-            f.write("abiquo.virtualfactory.storagelink.password = %s\n" %
+            f.write("#abiquo.virtualfactory.storagelink.password = %s\n" %
                     self.abiquo_virtualfactory_storagelink_password)
-            f.write("abiquo.virtualfactory.storagelink.address = %s\n" %
+            f.write("#abiquo.virtualfactory.storagelink.address = %s\n" %
                     self.abiquo_virtualfactory_storagelink_address)
             f.write("abiquo.redis.port = %s\n" %
                     self.abiquo_redis_port)
             f.write("abiquo.redis.host = %s\n" %
                     self.abiquo_redis_host)
-            f.write("abiquo.storagemanager.netapp.user = %s\n" %
+            f.write("#abiquo.storagemanager.netapp.user = %s\n" %
                     "root")
-            f.write("abiquo.storagemanager.netapp.password= %s\n" %
+            f.write("#abiquo.storagemanager.netapp.password= %s\n" %
                     "temporal")
-            f.write("abiquo.dvs.enabled = %s\n" %
+            f.write("#abiquo.dvs.enabled = %s\n" %
                     self.abiquo_dvs_enabled)
-            f.write("abiquo.dvs.vcenter.user = %s\n" %
+            f.write("#abiquo.dvs.vcenter.user = %s\n" %
                     self.abiquo_dvs_vcenter_user)
-            f.write("abiquo.dvs.vcenter.password = %s\n" %
+            f.write("#abiquo.dvs.vcenter.password = %s\n" %
                     self.abiquo_dvs_vcenter_password)
             f.write("abiquo.datacenter.id = %s\n" %
                     self.abiquo_datacenter_id)
             # CIFS repo is special...
             cifs_host = re.search("(\d{1,3}\.){3}\d{1,3}", self.abiquo_nfs_repository)
             if cifs_host:
-                f.write("abiquo.virtualfactory.hyperv.repositoryLocation = //%s/vm_repository\n" %
+                f.write("#abiquo.virtualfactory.hyperv.repositoryLocation = //%s/vm_repository\n" %
                         cifs_host.group(0))
             else:
-                f.write("abiquo.virtualfactory.hyperv.repositoryLocation = //127.0.0.1/vm_repository\n")
+                f.write("#abiquo.virtualfactory.hyperv.repositoryLocation = //127.0.0.1/vm_repository\n")
             f.close()
 
     def writeKS(self, f):

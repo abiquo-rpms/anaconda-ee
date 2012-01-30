@@ -40,6 +40,7 @@ class AbiquoInstallTypeWindow (InstallWindow):
             self.dispatch.skipStep("abiquo_hv", skip=1)
             self.dispatch.skipStep("abiquo_distributed", skip=1)
             self.dispatch.skipStep("abiquo_dhcp_relay", skip=1)
+            self.dispatch.skipStep("abiquo_nfs_config", skip=1)
         else:
             self.anaconda.id.abiquo.selectedGroups = []
             self.anaconda.id.abiquo.install_type = 'advanced'

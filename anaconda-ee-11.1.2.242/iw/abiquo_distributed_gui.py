@@ -27,6 +27,10 @@ class AbiquoDistributedWindow(InstallWindow):
             self.dispatch.skipStep("abiquo_password", skip = 0)
         else:
             self.dispatch.skipStep("abiquo_password", skip = 1)
+        
+        for g in ['abiquo-server', 'abiquo-remote-services', 'abiquo-v2v']:
+            if g in self.anaconda.id.abiquo.selectedGroups:
+                self.dispatch.skipStep("abiquo_nfs_config", skip = 1, permanent = 1)
 
         if ('abiquo-remote-services' in self.anaconda.id.abiquo.selectedGroups):
             self.dispatch.skipStep("abiquo_rs", skip = 0)

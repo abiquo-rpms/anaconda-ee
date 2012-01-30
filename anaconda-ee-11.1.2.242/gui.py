@@ -80,6 +80,7 @@ stepToClass = {
     #"abiquo": ("abiquo_gui", "AbiquoWindow"),    
     "abiquo_distributed": ("abiquo_distributed_gui", "AbiquoDistributedWindow"),    
     "abiquo_password" : ("abiquo_password_gui", "AbiquoPasswordWindow"),
+    "abiquo_nfs_config" : ("abiquo_nfs_config_gui", "AbiquoNFSConfigWindow"),
     "abiquo_rs": ("abiquo_rs_gui", "AbiquoRSWindow"),    
     "abiquo_v2v": ("abiquo_v2v_gui", "AbiquoV2VWindow"),    
     "abiquo_hv": ("abiquo_hv_gui", "AbiquoHVWindow"),    

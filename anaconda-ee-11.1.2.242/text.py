@@ -649,6 +649,7 @@ class InstallInterface:
         anaconda.dispatch.skipStep("abiquo_install_type", 1)
         anaconda.dispatch.skipStep("abiquo_distributed", 1)
         anaconda.dispatch.skipStep("abiquo_password", 1)
+        anaconda.dispatch.skipStep("abiquo_nfs_config", 1)
 
         instLang = anaconda.id.instLanguage
 

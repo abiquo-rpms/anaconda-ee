@@ -205,6 +205,7 @@ class TaskWindow(InstallWindow):
         log.info('Finished group selection: %s' % self.anaconda.id.abiquo.selectedGroups)
         
         self.dispatch.skipStep("abiquo_password", skip = 1)
+        #self.dispatch.skipStep("abiquo_nfs_config", skip = 1)
 
         for g in self.abiquo_groups:
             if g in self.anaconda.id.abiquo.selectedGroups:
@@ -212,20 +213,18 @@ class TaskWindow(InstallWindow):
             else:
                 map(self.backend.deselectGroup, [g])
 
-        for g in ['abiquo-remote-services', 'cloud-in-a-box', 'abiquo-monolithic']:
+        for g in ['abiquo-remote-services', 'abiquo-monolithic']:
             if g not in self.anaconda.id.abiquo.selectedGroups:
                 self.dispatch.skipStep("abiquo_rs", skip = 1)
                 self.dispatch.skipStep("abiquo_v2v", skip = 1)
         
-        for g in ['abiquo-server', 'cloud-in-a-box', 'abiquo-monolithic']:
+        for g in ['abiquo-server', 'abiquo-monolithic']:
             if g in self.anaconda.id.abiquo.selectedGroups:
                 self.dispatch.skipStep("abiquo_password", skip = 0)
 
         if ('abiquo-monolithic' in self.anaconda.id.abiquo.selectedGroups) and \
-                ('abiquo-nfs-repository' not in self.anaconda.id.abiquo.selectedGroups):
-                    self.dispatch.skipStep("abiquo_rs", skip = 1)
-        else:
-            self.dispatch.skipStep("abiquo_rs", skip = 0)
+                ('abiquo-nfs-repository' in self.anaconda.id.abiquo.selectedGroups):
+                    self.dispatch.skipStep("abiquo_nfs_config", skip = 1)
 
         if 'abiquo-distributed' not in self.anaconda.id.abiquo.selectedGroups:
             self.dispatch.skipStep("abiquo_distributed", skip = 1)
@@ -237,15 +236,6 @@ class TaskWindow(InstallWindow):
             self.dispatch.skipStep("abiquo_distributed", skip = 0)
 
 
-        if 'cloud-in-a-box' in self.anaconda.id.abiquo.selectedGroups:
-            log.info("cloud-in-a-box selected, skip.")
-            self.dispatch.skipStep("abiquo", skip = 1)
-
-        if 'abiquo-remote-services' not in self.anaconda.id.abiquo.selectedGroups:
-            self.dispatch.skipStep("abiquo_rs", skip = 1)
-        else:
-            self.dispatch.skipStep("abiquo_rs", skip = 0)
-        
         if (('abiquo-xen' in self.anaconda.id.abiquo.selectedGroups)) or \
            (('abiquo-kvm' in self.anaconda.id.abiquo.selectedGroups)) or \
            (('abiquo-virtualbox' in self.anaconda.id.abiquo.selectedGroups)):
@@ -255,53 +245,7 @@ class TaskWindow(InstallWindow):
             log.info("abiquo-kvm/abiquo-xen/abiquo-virtualbox not selected, skip.")
             self.dispatch.skipStep("abiquo_hv", skip = 1)
 
-        if ('cloud-in-a-box' in self.anaconda.id.abiquo.selectedGroups):
-            if 'abiquo-kvm' in self.anaconda.id.abiquo.selectedGroups:
-                self.intf.messageWindow(_("<b>Warning</b>"),
-                           _("<b>Overlapping tasks selected</b>\n\n"
-                             "You have selected Cloud in a Box install. "
-                             "Selecting Abiquo KVM is not permitted. Please, "
-                             "deselect Abiquo KVM and click next."),
-                                    type="warning")
-                raise gui.StayOnScreen
-            
-            if 'abiquo-virtualbox' in self.anaconda.id.abiquo.selectedGroups:
-                self.intf.messageWindow(_("<b>Warning</b>"),
-                           _("<b>Overlapping tasks selected</b>\n\n"
-                             "You have selected Cloud in a Box install. "
-                             "Selecting Abiquo VirtualBox is not permitted. Please, "
-                             "deselect Abiquo VirtualBox and click next."),
-                                    type="warning")
-                raise gui.StayOnScreen
-            
-            if 'abiquo-xen' in self.anaconda.id.abiquo.selectedGroups:
-                self.intf.messageWindow(_("<b>Warning</b>"),
-                           _("<b>Overlapping tasks selected</b>\n\n"
-                             "You have selected Cloud in a Box install. "
-                             "Selecting Abiquo Xen is not permitted. Please, "
-                             "deselect Abiquo Xen and click next."),
-                                    type="warning")
-                raise gui.StayOnScreen
-
-        if ('cloud-in-a-box' in self.anaconda.id.abiquo.selectedGroups) and \
-                ('abiquo-nfs-repository' in self.anaconda.id.abiquo.selectedGroups):
-                    self.intf.messageWindow(_("<b>Warning</b>"),
-                            _("<b>Overlapping tasks selected</b>\n\n"
-                             "You have selected <i>Abiquo Cloud-in-a-Box</i> install. "
-                             "Deselect Abiquo NFS Repository, it's not required."),
-                            type="warning")
-                    raise gui.StayOnScreen
-        
         if 'abiquo-remote-repository' in self.anaconda.id.abiquo.selectedGroups:
-            if 'cloud-in-a-box' in self.anaconda.id.abiquo.selectedGroups:
-                self.intf.messageWindow(_("<b>Warning</b>"),
-                           _("<b>Overlapping tasks selected</b>\n\n"
-                             "You have selected <i>Abiquo Cloud-in-a-Box</i> install. "
-                             "Selecting Abiquo Remote Repository is not allowed. Please, "
-                             "deselect Abiquo Remote Repository and click next."),
-                                    type="warning")
-                raise gui.StayOnScreen
-            
             if 'abiquo-distributed' in self.anaconda.id.abiquo.selectedGroups:
                 self.intf.messageWindow(_("<b>Warning</b>"),
                            _("<b>Overlapping tasks selected</b>\n\n"
@@ -320,25 +264,11 @@ class TaskWindow(InstallWindow):
                                     type="warning")
                 raise gui.StayOnScreen
 
-        if 'cloud-in-a-box' in self.anaconda.id.abiquo.selectedGroups:
-            #self.dispatch.skipStep("abiquo_rs", skip = 1)
-            self.dispatch.skipStep("abiquo_hv", skip = 1)
-            self.dispatch.skipStep("abiquo_v2v", skip = 1)
-        
         if not ('abiquo-dhcp-relay' in self.anaconda.id.abiquo.selectedGroups):
             self.dispatch.skipStep("abiquo_dhcp_relay", skip = 1)
         else:
             self.dispatch.skipStep("abiquo_dhcp_relay", skip = 0)
         
-        if ('abiquo-dhcp-relay' in self.anaconda.id.abiquo.selectedGroups) and \
-                ('cloud-in-a-box' in self.anaconda.id.abiquo.selectedGroups):
-                    self.intf.messageWindow(_("<b>Warning</b>"),
-                            _("<b>Overlapping tasks selected</b>\n\n"
-                             "You have selected <i>Abiquo DHCP Relay</i> install. "
-                             "Selecting Cloud-in-a-Box is not permitted."),
-                            type="warning")
-                    raise gui.StayOnScreen
-
     def _task_store_sel_changed(self, tree_selection):
         lbl = self.xml.get_widget("taskDescLabel")
         model, iter = tree_selection.get_selected()

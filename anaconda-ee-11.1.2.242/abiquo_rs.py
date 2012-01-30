@@ -25,6 +25,13 @@ def bool(val):
 class AbiquoRS:
 
     def write(self, instPath):
+        # HACK
+        # Make sure abiquo.appliancemanager.repositoryLocation
+        # is a valid NFS URL
+        nfs_url = re.search("nfs-server-ip", self.abiquo_nfs_repository)
+        if nfs_url:
+            self.abiquo_nfs_repository = "127.0.0.1:/opt/vm_repository"
+                
         # dont do this in test mode!
         if flags.test:
             return
@@ -70,13 +77,7 @@ class AbiquoRS:
                     self.abiquo_dvs_vcenter_password)
             f.write("abiquo.datacenter.id = %s\n" %
                     self.abiquo_datacenter_id)
-            # CIFS repo is special...
-            cifs_host = re.search("(\d{1,3}\.){3}\d{1,3}", self.abiquo_nfs_repository)
-            if cifs_host:
-                f.write("#abiquo.virtualfactory.hyperv.repositoryLocation = //%s/vm_repository\n" %
-                        cifs_host.group(0))
-            else:
-                f.write("#abiquo.virtualfactory.hyperv.repositoryLocation = //127.0.0.1/vm_repository\n")
+            f.write("#abiquo.virtualfactory.hyperv.repositoryLocation = //127.0.0.1/vm_repository\n")
             f.close()
 
     def writeKS(self, f):

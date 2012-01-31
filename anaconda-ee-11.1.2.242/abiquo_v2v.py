@@ -18,20 +18,17 @@ import re
 import logging
 log = logging.getLogger("anaconda")
 
-def bool(val):
-    if val: return "true"
-    return "false"
-
 class AbiquoV2V:
 
     def write(self, instPath):
+        log.info("Writing abiquo_v2v settings")
         # dont do this in test mode!
         if flags.test:
             return
 
 	# Write only if V2V present and remote services not installed
         if os.path.isdir(instPath + "/opt/abiquo/tomcat/webapps/bpm-async") and not \
-			os.path.isdir(instPath + "/opt/abiquo/tomcat/webapps/bpm-async"):
+			os.path.isdir(instPath + "/opt/abiquo/tomcat/webapps/vsm"):
             f = open(instPath + "/opt/abiquo/config/abiquo.properties", 'a')
             f.write("abiquo.rabbitmq.username = %s\n" %
                     self.abiquo_rabbitmq_username)

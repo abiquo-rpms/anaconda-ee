@@ -18,10 +18,6 @@ import re
 import logging
 log = logging.getLogger("anaconda")
 
-def bool(val):
-    if val: return "true"
-    return "false"
-
 class AbiquoRS:
 
     def write(self, instPath):

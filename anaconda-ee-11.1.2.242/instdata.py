@@ -178,16 +178,15 @@ class InstallData:
                 self.anaconda.backend.isGroupSelected('cloud-in-a-box') or \
                 self.anaconda.backend.isGroupSelected('abiquo-monolithic'):
                     log.info("Writing abiquo settings")
-                    self.abiquo.write (self.anaconda.rootPath)
+                    self.abiquo.write(self.anaconda.rootPath)
         if self.anaconda.backend.isGroupSelected('abiquo-remote-services') or \
                 self.anaconda.backend.isGroupSelected('cloud-in-a-box') or \
                 self.anaconda.backend.isGroupSelected('abiquo-monolithic'):
                     log.info("Writing abiquo_rs settings")
-                    self.abiquo_rs.write (self.anaconda.rootPath)
+                    self.abiquo_rs.write(self.anaconda.rootPath)
         if self.anaconda.backend.isGroupSelected('abiquo-v2v') and not \
                 self.anaconda.backend.isGroupSelected('abiquo-remote-services'):
-                    log.info("Writing abiquo_v2v settings")
-                    self.abiquo_v2v.write (self.anaconda.rootPath)
+                    self.abiquo_v2v.write(self.anaconda.rootPath)
 
         # make sure crypt_style in libuser.conf matches the salt we're using
         users.createLuserConf(self.anaconda.rootPath, saltname=self.getSalt())

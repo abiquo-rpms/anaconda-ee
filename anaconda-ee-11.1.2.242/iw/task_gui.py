@@ -241,6 +241,7 @@ class TaskWindow(InstallWindow):
            (('abiquo-virtualbox' in self.anaconda.id.abiquo.selectedGroups)):
             log.info("abiquo-kvm or abiquo-xen selected, show step.")
             self.dispatch.skipStep("abiquo_hv", skip = 0)
+            self.dispatch.skipStep("abiquo_nfs_config", skip = 1, permanent = 1)
         else:
             log.info("abiquo-kvm/abiquo-xen/abiquo-virtualbox not selected, skip.")
             self.dispatch.skipStep("abiquo_hv", skip = 1)

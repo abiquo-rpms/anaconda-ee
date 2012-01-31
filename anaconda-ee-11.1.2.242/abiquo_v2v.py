@@ -30,6 +30,7 @@ class AbiquoV2V:
         if os.path.isdir(instPath + "/opt/abiquo/tomcat/webapps/bpm-async") and not \
 			os.path.isdir(instPath + "/opt/abiquo/tomcat/webapps/vsm"):
             f = open(instPath + "/opt/abiquo/config/abiquo.properties", 'a')
+            f.write("[remote-services]\n")
             f.write("abiquo.rabbitmq.username = %s\n" %
                     self.abiquo_rabbitmq_username)
             f.write("abiquo.rabbitmq.password = %s\n" %

@@ -71,7 +71,7 @@ class Abiquo:
                     self.abiquo_server_ip)
             
             # add redis props if not instaling remote services
-            if not os.path.isdir(instPath + '/opt/abiquo/tomcat/webapps/tarantino'):
+            if not os.path.isdir(instPath + '/opt/abiquo/tomcat/webapps/virtualfactory'):
                     f.write("abiquo.redis.port = %s\n" %
                             self.abiquo_redis_port)
                     f.write("abiquo.redis.host = %s\n" %
